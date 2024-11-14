@@ -22,13 +22,17 @@ const MobileView = () => {
     try {
       setIsAnalyzing(true);
       setError(null);
-   
+      setShowCamera(false); // 先關閉相機
+      
+      // 先顯示"分析中"狀態
+      setAnalysisResult({ analysis: "分析中..." });
+  
       const base64Image = await new Promise((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result.split(',')[1]);
         reader.readAsDataURL(blob);
       });
-   
+  
       const response = await fetch(`${config.apiEndpoint}/analyze`, {
         method: 'POST',
         headers: {
@@ -38,14 +42,14 @@ const MobileView = () => {
           image: base64Image
         })
       });
-   
+  
       const data = await response.json();
       const analysisResult = JSON.parse(data.body);
       
       if (!response.ok) {
         throw new Error(data.error || '分析失敗');
       }
-   
+  
       setAnalysisResult(analysisResult);
       
     } catch (error) {
@@ -53,9 +57,8 @@ const MobileView = () => {
       setError(error.message);
     } finally {
       setIsAnalyzing(false);
-      setShowCamera(false);
     }
-   };
+  };
 
   const handleRetake = () => {
     setAnalysisResult(null);
