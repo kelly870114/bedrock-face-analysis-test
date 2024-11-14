@@ -1,4 +1,3 @@
-// src/components/mobile/AnalysisResult.jsx
 import React from 'react';
 import styled from 'styled-components';
 
