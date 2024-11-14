@@ -22,39 +22,40 @@ const MobileView = () => {
     try {
       setIsAnalyzing(true);
       setError(null);
-
+   
       const base64Image = await new Promise((resolve) => {
         const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(",")[1]);
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
         reader.readAsDataURL(blob);
       });
-
+   
       const response = await fetch(`${config.apiEndpoint}/analyze`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          image: base64Image,
-        }),
+          image: base64Image
+        })
       });
-
+   
       const data = await response.json();
-      console.log("Response data:", data); // 加入這行來檢查收到的數據
-
+      const analysisResult = JSON.parse(data.body);
+      
       if (!response.ok) {
-        throw new Error(data.error || "分析失敗");
+        throw new Error(data.error || '分析失敗');
       }
-
-      setAnalysisResult(data);
+   
+      setAnalysisResult(analysisResult);
+      
     } catch (error) {
-      console.error("Error:", error); // 加入這行來檢查錯誤
+      console.error('Error:', error);
       setError(error.message);
     } finally {
       setIsAnalyzing(false);
       setShowCamera(false);
     }
-  };
+   };
 
   const handleRetake = () => {
     setAnalysisResult(null);
