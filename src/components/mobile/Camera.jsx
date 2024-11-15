@@ -1,10 +1,10 @@
-// src/components/mobile/Camera.jsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { X, RotateCcw, Check } from 'lucide-react';
+import { X } from 'lucide-react';
 
 const MAIN_COLOR = '#FF9900';
 
+// 相機全屏容器
 const CameraContainer = styled.div`
   position: fixed;
   top: 0;
@@ -17,6 +17,7 @@ const CameraContainer = styled.div`
   flex-direction: column;
 `;
 
+// 關閉按鈕
 const CloseButton = styled.button`
   position: absolute;
   top: 20px;
@@ -36,52 +37,26 @@ const CloseButton = styled.button`
   }
 `;
 
+// 視訊預覽
 const VideoPreview = styled.video`
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transform: scaleX(-1); // 加入這行
 `;
 
-const ImagePreview = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background-color: black;
-`;
-
-const ButtonContainer = styled.div`
+// 拍照按鈕容器
+const CaptureButtonContainer = styled.div`
   position: absolute;
   bottom: 40px;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
-  gap: 40px;
   padding: 20px;
 `;
 
-const ActionButton = styled.button`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${props => props.variant === 'primary' ? MAIN_COLOR : 'white'};
-  color: ${props => props.variant === 'primary' ? 'white' : MAIN_COLOR};
-  
-  &:hover {
-    transform: scale(1.05);
-  }
-  
-  &:active {
-    transform: scale(0.95);
-  }
-`;
-
+// 拍照按鈕
 const CaptureButton = styled.button`
   width: 72px;
   height: 72px;
@@ -89,6 +64,7 @@ const CaptureButton = styled.button`
   background: white;
   border: none;
   cursor: pointer;
+  transition: all 0.2s ease;
   
   &::before {
     content: '';
@@ -101,14 +77,31 @@ const CaptureButton = styled.button`
     border-radius: 50%;
     border: 3px solid ${MAIN_COLOR};
   }
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+  
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const ErrorMessage = styled.div`
+  color: white;
+  text-align: center;
+  padding: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 `;
 
 const Camera = ({ onCapture, onClose }) => {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
 
+  // 啟動相機
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -131,55 +124,55 @@ const Camera = ({ onCapture, onClose }) => {
     }
   };
 
+  // 停止相機
   const stopCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
     }
   };
 
+  // 拍照
   const handleCapture = () => {
     const video = videoRef.current;
     const canvas = document.createElement('canvas');
+    
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
     const context = canvas.getContext('2d');
-    context.drawImage(video, 0, 0);
+    // 翻轉繪製
+    context.scale(-1, 1);
+    context.drawImage(video, -video.videoWidth, 0);
     
-    // 保存 blob 和預覽 URL
     canvas.toBlob(
       (blob) => {
-        setCapturedImage(blob);
-        const url = URL.createObjectURL(blob);
-        setPreviewUrl(url);
+        onCapture(blob);
+        stopCamera();
       },
       'image/jpeg', 
       0.95
     );
   };
 
-  const handleRetake = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setCapturedImage(null);
-    setPreviewUrl(null);
-    startCamera();
-  };
-
-  const handleAccept = () => {
-    onCapture(capturedImage);
-  };
-
+  // 組件掛載時啟動相機
   useEffect(() => {
     startCamera();
-    return () => {
-      stopCamera();
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
+    return () => stopCamera();
+  }, []);
+
+  // 鍵盤事件處理
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        handleCapture();
       }
     };
-  }, []);
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [onClose]);
 
   return (
     <CameraContainer>
@@ -187,31 +180,16 @@ const Camera = ({ onCapture, onClose }) => {
         <X size={24} />
       </CloseButton>
 
-      {!previewUrl ? (
-        <>
-          <VideoPreview 
-            ref={videoRef}
-            autoPlay 
-            playsInline
-            muted
-          />
-          <ButtonContainer>
-            <CaptureButton onClick={handleCapture} />
-          </ButtonContainer>
-        </>
-      ) : (
-        <>
-          <ImagePreview src={previewUrl} alt="captured" />
-          <ButtonContainer>
-            <ActionButton onClick={handleRetake}>
-              <RotateCcw size={24} />
-            </ActionButton>
-            <ActionButton variant="primary" onClick={handleAccept}>
-              <Check size={24} />
-            </ActionButton>
-          </ButtonContainer>
-        </>
-      )}
+      <VideoPreview 
+        ref={videoRef}
+        autoPlay 
+        playsInline
+        muted
+      />
+
+      <CaptureButtonContainer>
+        <CaptureButton onClick={handleCapture} />
+      </CaptureButtonContainer>
     </CameraContainer>
   );
 };
