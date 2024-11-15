@@ -88,3 +88,15 @@ export const CameraButton = styled.button`
     transform: scale(0.95);
   }
 `;
+export const ImageContainer = styled.div`
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+`;

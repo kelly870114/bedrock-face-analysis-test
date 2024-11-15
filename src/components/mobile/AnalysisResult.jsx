@@ -1,3 +1,4 @@
+// AnalysisResult.jsx
 import React from 'react';
 import styled from 'styled-components';
 
@@ -7,6 +8,8 @@ const Container = styled.div`
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin: 20px;
+  width: 100%;
+  max-width: 500px;
 `;
 
 const Title = styled.h2`
@@ -14,6 +17,19 @@ const Title = styled.h2`
   font-size: 24px;
   margin-bottom: 16px;
   text-align: center;
+`;
+
+const ImageContainer = styled.div`
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
 `;
 
 const Content = styled.div`
@@ -38,11 +54,16 @@ const RetakeButton = styled.button`
   }
 `;
 
-const AnalysisResult = ({ result, onRetake }) => {
+const AnalysisResult = ({ result, imageUrl, onRetake }) => {
   const analysisText = result?.analysis || '無法取得分析結果';
 
   return (
     <Container>
+      {imageUrl && (
+        <ImageContainer>
+          <img src={imageUrl} alt="captured" />
+        </ImageContainer>
+      )}
       <Title>面相分析結果</Title>
       <Content>{analysisText}</Content>
       <RetakeButton onClick={onRetake}>
