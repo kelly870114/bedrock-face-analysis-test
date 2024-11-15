@@ -8,7 +8,8 @@ import {
   MessageBox,
   CameraButtonContainer,
   CameraButton,
-  ImageContainer
+  ImageContainer,
+  CatDiagram
 } from "./styles";
 import Camera from "./Camera";
 import AnalysisResult from "./AnalysisResult";
@@ -104,10 +105,23 @@ const MobileView = () => {
             onRetake={handleRetake}
           />
         ) : (
-          <MessageBox>
-            <h2>開始分析</h2>
-            <p>點擊下方相機按鈕開始拍攝，讓 AI 為您分析面相</p>
-          </MessageBox>
+          <>
+            <ImageContainer>
+              <img src="/brain-icon.png" alt="AI Brain" />
+            </ImageContainer>
+            <h2>
+              Amazon Bedrock
+              <br />
+              AI 面相大師
+            </h2>
+            <CatDiagram>
+              <img src="/cat-diagram.png" alt="Face Analysis Diagram" />
+            </CatDiagram>
+            <CameraButton onClick={() => setShowCamera(true)}>
+              <CameraIcon size={24} />
+              開始分析
+            </CameraButton>
+          </>
         )}
       </Content>
 
