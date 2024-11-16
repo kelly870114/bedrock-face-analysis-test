@@ -4,32 +4,36 @@ const MAIN_COLOR = '#FF9900';
 
 export const Container = styled.div`
   min-height: 100vh;
-  background-color: #FAFAFA;
   display: flex;
   flex-direction: column;
+  position: relative; // 添加相對定位
 `;
 
-export const Header = styled.header`
-  padding: 20px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  
-  h1 {
-    font-size: 20px;
-    color: #333;
-    font-weight: 600;
-    text-align: center;
-  }
+
+export const BackgroundImage = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh; // 改為100vh以覆蓋整個視窗高度
+  background-image: url('/mobile_bg.png');
+  background-size: contain; // 改為contain確保圖片完整顯示
+  background-position: top center; // 確保圖片從頂部開始
+  background-repeat: no-repeat;
+  z-index: 0;
 `;
+
+
 
 export const Content = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   padding: 20px;
   gap: 24px;
+  position: center; // 添加相對定位
+  z-index: 1; // 確保內容在背景之上
 `;
 
 export const MessageBox = styled.div`
@@ -63,30 +67,35 @@ export const CameraButtonContainer = styled.div`
   display: flex;
   justify-content: center;
   padding: 20px;
+  z-index: 2;
 `;
 
 export const CameraButton = styled.button`
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  border: none;
-  background-color: ${MAIN_COLOR};
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px; // 圖標和文字之間的間距
+  padding: 16px 32px; // 調整內部間距
+  border-radius: 10px; // 圓角
+  border: none;
+  background-color: #000000;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   
   &:hover {
-    transform: scale(1.05);
-    background-color: #ffad33;
+    transform: translateY(-2px);
+    background-color: #414141;
   }
   
   &:active {
-    transform: scale(0.95);
+    transform: translateY(0);
   }
 `;
+
 export const ImageContainer = styled.div`
   width: 100%;
   margin-bottom: 20px;
@@ -99,3 +108,4 @@ export const ImageContainer = styled.div`
     object-fit: cover;
   }
 `;
+

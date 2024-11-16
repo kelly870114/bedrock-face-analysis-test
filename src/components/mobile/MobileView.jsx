@@ -8,7 +8,8 @@ import {
   MessageBox,
   CameraButtonContainer,
   CameraButton,
-  ImageContainer
+  ImageContainer,
+  BackgroundImage,
 } from "./styles";
 import Camera from "./Camera";
 import AnalysisResult from "./AnalysisResult";
@@ -19,7 +20,6 @@ const MobileView = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [error, setError] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
-
 
   const handleCapture = async (blob) => {
     try {
@@ -78,10 +78,7 @@ const MobileView = () => {
 
   return (
     <Container>
-      <Header>
-        <h1>AI 面相分析</h1>
-      </Header>
-
+      <BackgroundImage />
       <Content>
         {isAnalyzing ? (
           <>
@@ -104,12 +101,8 @@ const MobileView = () => {
             imageUrl={capturedImage}
             onRetake={handleRetake}
           />
-        ) : (
-          <MessageBox>
-            <h2>開始分析</h2>
-            <p>點擊下方相機按鈕開始拍攝，讓 AI 為您分析面相</p>
-          </MessageBox>
-        )}
+        ) : null}{" "}
+        {/* 改為 null，移除 MessageBox */}
       </Content>
 
       {!analysisResult && !isAnalyzing && (
@@ -118,7 +111,8 @@ const MobileView = () => {
             onClick={() => setShowCamera(true)}
             disabled={isAnalyzing}
           >
-            <CameraIcon size={32} color="white" />
+            <CameraIcon size={24} color="white" /> {/* 將size調小 */}
+            開始分析
           </CameraButton>
         </CameraButtonContainer>
       )}
