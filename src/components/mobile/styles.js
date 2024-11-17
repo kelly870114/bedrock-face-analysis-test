@@ -1,6 +1,13 @@
 import styled from 'styled-components';
+import { keyframes } from 'styled-components';
+
 
 const MAIN_COLOR = '#FF9900';
+const fadeInOut = keyframes`
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+`;
 
 export const Container = styled.div`
   min-height: 100vh;
@@ -98,6 +105,7 @@ export const CameraButton = styled.button`
 
 export const ImageContainer = styled.div`
   width: 100%;
+  position: relative; // 添加相對定位
   margin-bottom: 20px;
   border-radius: 8px;
   overflow: hidden;
@@ -109,3 +117,18 @@ export const ImageContainer = styled.div`
   }
 `;
 
+export const ImageOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  animation: ${fadeInOut} 2s infinite ease-in-out;
+`;

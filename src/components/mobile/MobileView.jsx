@@ -10,6 +10,7 @@ import {
   CameraButton,
   ImageContainer,
   BackgroundImage,
+  ImageOverlay
 } from "./styles";
 import Camera from "./Camera";
 import AnalysisResult from "./AnalysisResult";
@@ -78,17 +79,14 @@ const MobileView = () => {
 
   return (
     <Container>
-      <BackgroundImage />
+      {!isAnalyzing && !analysisResult && <BackgroundImage />}
       <Content>
         {isAnalyzing ? (
           <>
             <ImageContainer>
               <img src={capturedImage} alt="captured" />
+              <ImageOverlay>分析中...</ImageOverlay>
             </ImageContainer>
-            <MessageBox>
-              <h2>分析中</h2>
-              <p>正在進行面相分析，請稍候...</p>
-            </MessageBox>
           </>
         ) : error ? (
           <MessageBox>
@@ -96,11 +94,14 @@ const MobileView = () => {
             <p>{error}</p>
           </MessageBox>
         ) : analysisResult ? (
-          <AnalysisResult
-            result={analysisResult}
-            imageUrl={capturedImage}
-            onRetake={handleRetake}
-          />
+          <>
+            {/* <StripeBorder /> 在這裡添加邊框 */}
+            <AnalysisResult
+              result={analysisResult}
+              imageUrl={capturedImage}
+              onRetake={handleRetake}
+            />
+          </>
         ) : null}{" "}
         {/* 改為 null，移除 MessageBox */}
       </Content>

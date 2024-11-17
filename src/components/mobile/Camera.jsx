@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { X } from 'lucide-react';
 
-const MAIN_COLOR = '#FF9900';
+const MAIN_COLOR = '#000000';
 
 // 相機全屏容器
 const CameraContainer = styled.div`
