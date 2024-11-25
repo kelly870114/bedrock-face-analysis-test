@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Camera as CameraIcon } from "lucide-react";
-import { config } from "../../config"; // 引入設定
+import { config } from "../../config";
 import {
   Container,
   Header,
@@ -26,13 +26,10 @@ const MobileView = () => {
     try {
       setIsAnalyzing(true);
       setError(null);
-      // 先關閉相機
       setShowCamera(false);
 
-      // 儲存照片的 URL
       const imageUrl = URL.createObjectURL(blob);
       setCapturedImage(imageUrl);
-
       setAnalysisResult({ analysis: "分析中..." });
 
       const base64Image = await new Promise((resolve) => {
@@ -41,8 +38,11 @@ const MobileView = () => {
         reader.readAsDataURL(blob);
       });
 
+      console.log("Sending request to:", `${config.apiEndpoint}/analyze`);
+
       const response = await fetch(`${config.apiEndpoint}/analyze`, {
         method: "POST",
+        mode: "cors",
         headers: {
           "Content-Type": "application/json",
         },
@@ -51,17 +51,22 @@ const MobileView = () => {
         }),
       });
 
-      const data = await response.json();
-      const analysisResult = JSON.parse(data.body);
-
       if (!response.ok) {
-        throw new Error(data.error || "分析失敗");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const data = await response.json();
+      console.log("Response data:", data);
+
+      // 檢查 data.body 是否為字串
+      const analysisResult =
+        typeof data.body === "string" ? JSON.parse(data.body) : data;
+      console.log("Analysis result:", analysisResult);
 
       setAnalysisResult(analysisResult);
     } catch (error) {
       console.error("Error:", error);
-      setError(error.message);
+      setError(error.message || "分析失敗");
     } finally {
       setIsAnalyzing(false);
     }
