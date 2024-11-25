@@ -78,7 +78,7 @@ export const Footer = styled.footer`
 `;
 
 export const Input = styled.input`
-  width: 100%;
+  width: 80%;
   padding: 12px;
   border: 2px solid #e5e7eb;
   border-radius: 8px;

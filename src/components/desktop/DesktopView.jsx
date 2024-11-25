@@ -113,7 +113,7 @@ const DesktopView = () => {
         </Card>
 
         <Footer>
-          © 2024 Face Reading System. All rights reserved.
+          © 2024 Amazon Web Services Solutions Architect. All rights reserved.
         </Footer>
       </Container>
     );
@@ -122,9 +122,9 @@ const DesktopView = () => {
   return (
     <Container>
       <Card>
-        <Title>面相分析系統</Title>
+        <Title>🌝 Amazon Bedrock 面相大師 🌚</Title>
         <Description>
-          請輸入活動代碼以取得分析連結
+          請輸入活動代碼
         </Description>
 
         <form onSubmit={handleSubmit}>
@@ -148,7 +148,7 @@ const DesktopView = () => {
       </Card>
 
       <Footer>
-        © 2024 Face Reading System. All rights reserved.
+        © 2024 Amazon Web Services Solutions Architect. All rights reserved.
       </Footer>
     </Container>
   );

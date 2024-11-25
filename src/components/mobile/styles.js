@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { keyframes } from 'styled-components';
 
 
-const MAIN_COLOR = '#FF9900';
+const MAIN_COLOR = '#F39518';
 const fadeInOut = keyframes`
   0% { opacity: 0.7; }
   50% { opacity: 1; }
