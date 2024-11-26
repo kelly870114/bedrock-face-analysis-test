@@ -25,6 +25,7 @@ const MobileView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [eventInfo, setEventInfo] = useState(null);
 
+  // check if event id exists
   useEffect(() => {
     const checkEventAccess = async () => {
       try {
@@ -73,6 +74,7 @@ const MobileView = () => {
     checkEventAccess();
   }, [searchParams]);
 
+  // handle capture face
   const handleCapture = async (blob) => {
     try {
       setIsAnalyzing(true);
@@ -122,6 +124,7 @@ const MobileView = () => {
     }
   };
 
+  // handle retake photo
   const handleRetake = () => {
     if (capturedImage) {
       URL.revokeObjectURL(capturedImage);
@@ -132,7 +135,7 @@ const MobileView = () => {
     setShowCamera(true);
   };
 
-  // 載入中狀態
+  // loading
   if (isLoading) {
     return (
       <Container>
@@ -145,7 +148,7 @@ const MobileView = () => {
     );
   }
 
-  // 錯誤狀態（包括活動未開放）
+  // Error (including event not opened)
   if (error) {
     return (
       <Container>

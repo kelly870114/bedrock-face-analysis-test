@@ -22,6 +22,7 @@ const DesktopView = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  // handle summit event code
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!eventId.trim()) {
@@ -66,6 +67,7 @@ const DesktopView = () => {
     }
   };
 
+  // handle reset event code
   const handleReset = () => {
     setEventId('');
     setEventInfo(null);
@@ -74,7 +76,7 @@ const DesktopView = () => {
 
   const currentUrl = window.location.origin;
   const mobileUrl = `${currentUrl}/mobile?event=${eventInfo?.id}`;
-
+  
   if (eventInfo) {
     return (
       <Container>

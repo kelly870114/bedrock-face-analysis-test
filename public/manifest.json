@@ -1,6 +1,6 @@
 {
-  "short_name": "Amazon Bedrock Physiognomy",
-  "name": "Amazon Bedrock Physiognomy",
+  "short_name": "Amazon Bedrock Face Reader",
+  "name": "Amazon Bedrock Face Reader",
   "icons": [
     {
       "src": "face_logo.png",
