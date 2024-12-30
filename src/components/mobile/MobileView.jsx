@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera as CameraIcon } from "lucide-react";
 import { config } from "../../config";
@@ -24,6 +24,46 @@ const MobileView = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [eventInfo, setEventInfo] = useState(null);
+  const [analysisId, setAnalysisId] = useState(null);
+  const wsRef = useRef(null);
+
+  // WebSocket connection function
+  const connectWebSocket = (analysis_id) => {
+    const wsUrl = `wss://tppx6nu3cg.execute-api.us-east-1.amazonaws.com/prod?analysis_id=${analysis_id}`;
+    const ws = new WebSocket(wsUrl);
+
+    ws.onopen = () => {
+      console.log('WebSocket connected');
+    };
+
+    ws.onmessage = (event) => {
+      console.log('Raw WebSocket message:', event.data);
+      const data = JSON.parse(event.data);
+      console.log('Received WebSocket message:', data);
+
+      if (data.status === 'completed') {
+        // console.log('Setting analysis result:', data.result);
+        setAnalysisResult(data.result);
+        setIsAnalyzing(false);
+      } else if (data.status === 'failed') {
+        setError(data.error);
+        setIsAnalyzing(false);
+      }
+    };
+
+    ws.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setError('連線錯誤，請重試');
+      setIsAnalyzing(false);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket disconnected');
+    };
+
+    wsRef.current = ws;
+    return ws;
+  };
 
   // check if event id exists
   useEffect(() => {
@@ -41,6 +81,7 @@ const MobileView = () => {
           `${config.apiEndpoint}/checkEvent?event=${eventId}`,
           {
             method: "GET",
+            mode: "cors",
             headers: {
               "Content-Type": "application/json",
             },
@@ -74,52 +115,62 @@ const MobileView = () => {
     checkEventAccess();
   }, [searchParams]);
 
-  // handle capture face
+  // Cleanup WebSocket on component unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+      }
+    };
+  }, []);
+
   const handleCapture = async (blob) => {
     try {
       setIsAnalyzing(true);
       setError(null);
       setShowCamera(false);
-
+  
       const imageUrl = URL.createObjectURL(blob);
       setCapturedImage(imageUrl);
-      setAnalysisResult({ analysis: "分析中..." });
-
-      const base64Image = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(",")[1]);
-        reader.readAsDataURL(blob);
+  
+      // 轉換為 base64
+      const reader = new FileReader();
+      const base64Promise = new Promise((resolve, reject) => {
+        reader.onloadend = () => {
+          // 取得 base64 字串部分（去掉 data:image/jpeg;base64, 前綴）
+          const base64data = reader.result.split(',')[1];
+          resolve(base64data);
+        };
+        reader.onerror = reject;
       });
-
-      console.log("Sending request to:", `${config.apiEndpoint}/analyze`);
-
+      reader.readAsDataURL(blob);
+  
+      const base64data = await base64Promise;
+  
+      // 發送到後端
       const response = await fetch(`${config.apiEndpoint}/analyze`, {
         method: "POST",
-        mode: "cors",
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          image: base64Image,
-        }),
+          image: base64data
+        })
       });
-
+  
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+  
       const data = await response.json();
       console.log("Response data:", data);
-
-      const analysisResult =
-        typeof data.body === "string" ? JSON.parse(data.body) : data;
-      console.log("Analysis result:", analysisResult);
-
-      setAnalysisResult(analysisResult);
+  
+      setAnalysisId(data.analysis_id);
+      connectWebSocket(data.analysis_id);
+  
     } catch (error) {
       console.error("Error:", error);
       setError(error.message || "分析失敗");
-    } finally {
       setIsAnalyzing(false);
     }
   };
@@ -129,9 +180,13 @@ const MobileView = () => {
     if (capturedImage) {
       URL.revokeObjectURL(capturedImage);
     }
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
     setCapturedImage(null);
     setAnalysisResult(null);
     setError(null);
+    setAnalysisId(null);
     setShowCamera(true);
   };
 

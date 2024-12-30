@@ -38,6 +38,7 @@ const DesktopView = () => {
         `${config.apiEndpoint}/checkEvent?event=${eventId}`,
         {
           method: 'GET',
+          mode: 'cors',
           headers: {
             'Content-Type': 'application/json',
           },

@@ -144,14 +144,17 @@ const Camera = ({ onCapture, onClose }) => {
     context.scale(-1, 1);
     context.drawImage(video, -video.videoWidth, 0);
     
-    canvas.toBlob(
-      (blob) => {
-        onCapture(blob);
-        stopCamera();
-      },
-      'image/jpeg', 
-      0.95
-    );
+    canvas.toBlob((blob) => {
+      // 創建帶有時間戳的檔名以避免快取問題
+      const timestamp = new Date().getTime();
+      const imageFile = new File([blob], `photo_${timestamp}.jpg`, {
+        type: 'image/jpeg',
+        lastModified: timestamp
+      });
+
+      onCapture(imageFile);
+      stopCamera();
+    }, 'image/jpeg', 0.95); // 0.95 是圖片品質
   };
 
   // 組件掛載時啟動相機

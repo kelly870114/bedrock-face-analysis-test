@@ -150,7 +150,7 @@ const IconImage = styled.div`
 `;
 
 const AnalysisResult = ({ result, imageUrl, onRetake }) => {
-    const analysisData = result.analysis;  // 從 result.analysis 取得資料
+    // const analysisData = result?.result;
     const getIconForBlock = (blockIndex) => {
         return `/face_${blockIndex}.png`;
       };
@@ -164,11 +164,11 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
         )}
         
   
-        {analysisData.faceShape && (
+        {result.faceShape && (
           <AnalysisBlock>
             <IconImage src={getIconForBlock(1)} />
-            <BlockTitle>{analysisData.faceShape.title}</BlockTitle>
-            {Object.entries(analysisData.faceShape.content).map(([key, value]) => (
+            <BlockTitle>{result.faceShape.title}</BlockTitle>
+            {Object.entries(result.faceShape.content).map(([key, value]) => (
               <ContentItem key={key}>
                 <ItemTitle>{key}</ItemTitle>
                 <ItemContent>{value}</ItemContent>
@@ -177,11 +177,11 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
           </AnalysisBlock>
         )}
   
-        {analysisData.features && (
+        {result.features && (
           <AnalysisBlock>
             <IconImage src={getIconForBlock(2)} />
-            <BlockTitle>{analysisData.features.title}</BlockTitle>
-            {Object.entries(analysisData.features.content).map(([key, value]) => (
+            <BlockTitle>{result.features.title}</BlockTitle>
+            {Object.entries(result.features.content).map(([key, value]) => (
               <ContentItem key={key}>
                 <ItemTitle>{key}</ItemTitle>
                 <ItemContent>{value}</ItemContent>
@@ -190,11 +190,11 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
           </AnalysisBlock>
         )}
   
-        {analysisData.overall && (
+        {result.overall && (
           <AnalysisBlock>
             <IconImage src={getIconForBlock(3)} />
-            <BlockTitle>{analysisData.overall.title}</BlockTitle>
-            {Object.entries(analysisData.overall.content).map(([key, value]) => (
+            <BlockTitle>{result.overall.title}</BlockTitle>
+            {Object.entries(result.overall.content).map(([key, value]) => (
               <ContentItem key={key}>
                 <ItemTitle>{key}</ItemTitle>
                 <ItemContent>{value}</ItemContent>
@@ -203,10 +203,10 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
           </AnalysisBlock>
         )}
   
-        {analysisData.summary && (
+        {result.summary && (
           <Summary>
             <BlockTitle>整體評析</BlockTitle>
-            <p>{analysisData.summary}</p>
+            <p>{result.summary}</p>
           </Summary>
         )}
   
