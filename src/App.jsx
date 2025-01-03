@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import DesktopView from './components/desktop/DesktopView';
 import MobileView from './components/mobile/MobileView';
 
+
 const App = () => {
   return (
     <Router>
