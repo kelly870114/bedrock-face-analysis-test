@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import styled from "styled-components";
+import html2canvas from "html2canvas";
 
 const MAIN_COLOR = "#C84B31";
 
@@ -110,7 +111,7 @@ const Summary = styled.div`
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-
+  font-family: "Noto Serif TC", serif;
   p {
     color: #666;
     line-height: 1.8;
@@ -131,10 +132,58 @@ const IconImage = styled.div`
   z-index: 3;
 `;
 
+const DownloadButton = styled.button`
+  background-color: ${MAIN_COLOR};
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  margin-top: 10px;
+  cursor: pointer;
+  width: 100%;
+  font-family: "Noto Serif TC", serif;
+  font-size: 16px;
+
+  &:hover {
+    background-color: #45a049;
+  }
+`;
+
+const ResultContainer = styled.div`
+  background-color: #fdf6e9;
+  padding: 20px;
+  border-radius: 12px;
+`;
+
 const AnalysisResult = ({ result, imageUrl, onRetake }) => {
   // const analysisData = result?.result;
+  const resultRef = useRef(null);
+
   const getIconForBlock = (blockIndex) => {
     return `/face_${blockIndex}_white.png`;
+  };
+
+  const handleDownload = async () => {
+    try {
+      const element = resultRef.current;
+      const canvas = await html2canvas(element, {
+        backgroundColor: null,
+        scale: 2, // 提高解析度
+        useCORS: true, // 允許跨域圖片
+        logging: false,
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+      });
+
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = "面相分析結果.png";
+      link.click();
+    } catch (error) {
+      console.error("下載失敗:", error);
+      alert("圖片下載失敗，請稍後再試");
+    }
   };
 
   return (
@@ -144,69 +193,70 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
           <img src={imageUrl} alt="captured" />
         </ImageContainer>
       )}
+      <ResultContainer ref={resultRef}>
+        {result.faceShape && (
+          <AnalysisBlock>
+            <IconImage src={getIconForBlock(1)} />
+            <BlockTitle>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <span className="title-text">{result.faceShape.title}</span>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            </BlockTitle>
+            {Object.entries(result.faceShape.content).map(([key, value]) => (
+              <ContentItem key={key}>
+                <ItemTitle>{key}</ItemTitle>
+                <ItemContent>{value}</ItemContent>
+              </ContentItem>
+            ))}
+          </AnalysisBlock>
+        )}
 
-      {result.faceShape && (
-        <AnalysisBlock>
-          <IconImage src={getIconForBlock(1)} />
-          <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">{result.faceShape.title}</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-          </BlockTitle>
-          {Object.entries(result.faceShape.content).map(([key, value]) => (
-            <ContentItem key={key}>
-              <ItemTitle>{key}</ItemTitle>
-              <ItemContent>{value}</ItemContent>
-            </ContentItem>
-          ))}
-        </AnalysisBlock>
-      )}
+        {result.features && (
+          <AnalysisBlock>
+            <IconImage src={getIconForBlock(2)} />
+            <BlockTitle>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <span className="title-text">{result.features.title}</span>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            </BlockTitle>
+            {Object.entries(result.features.content).map(([key, value]) => (
+              <ContentItem key={key}>
+                <ItemTitle>{key}</ItemTitle>
+                <ItemContent>{value}</ItemContent>
+              </ContentItem>
+            ))}
+          </AnalysisBlock>
+        )}
 
-      {result.features && (
-        <AnalysisBlock>
-          <IconImage src={getIconForBlock(2)} />
-          <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">{result.features.title}</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-          </BlockTitle>
-          {Object.entries(result.features.content).map(([key, value]) => (
-            <ContentItem key={key}>
-              <ItemTitle>{key}</ItemTitle>
-              <ItemContent>{value}</ItemContent>
-            </ContentItem>
-          ))}
-        </AnalysisBlock>
-      )}
+        {result.overall && (
+          <AnalysisBlock>
+            <IconImage src={getIconForBlock(3)} />
+            <BlockTitle>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <span className="title-text">{result.overall.title}</span>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            </BlockTitle>
+            {Object.entries(result.overall.content).map(([key, value]) => (
+              <ContentItem key={key}>
+                <ItemTitle>{key}</ItemTitle>
+                <ItemContent>{value}</ItemContent>
+              </ContentItem>
+            ))}
+          </AnalysisBlock>
+        )}
 
-      {result.overall && (
-        <AnalysisBlock>
-          <IconImage src={getIconForBlock(3)} />
-          <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">{result.overall.title}</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-          </BlockTitle>
-          {Object.entries(result.overall.content).map(([key, value]) => (
-            <ContentItem key={key}>
-              <ItemTitle>{key}</ItemTitle>
-              <ItemContent>{value}</ItemContent>
-            </ContentItem>
-          ))}
-        </AnalysisBlock>
-      )}
-
-      {result.summary && (
-        <Summary>
-          <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">整體評析</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-          </BlockTitle>
-          <p>{result.summary}</p>
-        </Summary>
-      )}
-
+        {result.summary && (
+          <Summary>
+            <BlockTitle>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <span className="title-text">整體評析</span>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            </BlockTitle>
+            <p>{result.summary}</p>
+          </Summary>
+        )}
+      </ResultContainer>
+      <DownloadButton onClick={handleDownload}>下載分析結果</DownloadButton>
       <RetakeButton onClick={onRetake}>重新拍照</RetakeButton>
     </Container>
   );
