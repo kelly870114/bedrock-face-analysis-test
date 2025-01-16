@@ -16,7 +16,7 @@ import {
   CameraButton,
   ImageContainer,
   ImageOverlay,
-} from "./styles";
+} from "./styles-mobile";
 import Camera from "./Camera";
 import AnalysisResult from "./AnalysisResult";
 

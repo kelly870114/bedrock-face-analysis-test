@@ -1,162 +1,64 @@
-import React, { useRef } from "react";
-import styled from "styled-components";
+import React, { useState, useRef } from "react";
 import html2canvas from "html2canvas";
+import { X } from 'lucide-react';
+import { config } from '../../config';
+import {
+  Container,
+  ImageContainer,
+  RetakeButton,
+  AnalysisBlock,
+  BlockTitle,
+  ContentItem,
+  ItemTitle,
+  ItemContent,
+  Summary,
+  IconImage,
+  DownloadButton,
+  ResultContainer,
+  ModalOverlay,
+  ModalContent,
+  ModalTitle,
+  ModalCloseButton,
+  QRCodeContainer,
+  ModalText
+} from './styles-result';
 
-const MAIN_COLOR = "#C84B31";
 
-export const Container = styled.div`
-  padding: 5%;
-  margin: 2% auto;
-  width: 90%;
-  max-width: 400px;
-`;
 
-const ImageContainer = styled.div`
-  width: 100%;
-  margin-bottom: 20px;
-  border-radius: 8px;
-  overflow: hidden;
+// QR Code Modal 組件
+const QRCodeModal = ({ url, isOpen, onClose }) => {
+  if (!isOpen) return null;
 
-  img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-  }
-`;
-
-export const RetakeButton = styled.button`
-  background-color: ${MAIN_COLOR};
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  margin-top: 20px;
-  cursor: pointer;
-  width: 100%;
-  font-family: "Noto Serif TC", serif;
-  font-size: 16px;
-
-  &:hover {
-    background-color: #b85c38;
-  }
-`;
-
-export const AnalysisBlock = styled.div`
-  background: #fff0d9;
-  padding: 2rem 1rem 1rem;
-  margin-bottom: 2.5rem;
-  margin-top: 2rem;
-  width: 100%;
-  box-sizing: border-box;
-  border: 2px solid ${MAIN_COLOR};
-  border-radius: 12px;
-  position: relative;
-`;
-
-export const BlockTitle = styled.div`
-  position: center;
-  margin: 0 auto 20px;
-  background: #fff7e6;
-  padding: 5px 20px;
-  border: 2px solid ${MAIN_COLOR};
-  border-radius: 20px;
-  color: #000000;
-  font-size: 18px;
-  font-weight: 500;
-  text-align: center;
-  font-family: "Noto Serif TC", serif;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: fit-content;
-  min-width: 200px;
-  max-width: 80%;
-
-  .title-icon {
-    width: 18px;
-    height: 18px;
-  }
-
-  .title-text {
-    flex: 1;
-    text-align: center;
-  }
-`;
-
-const ContentItem = styled.div`
-  margin-bottom: 12px;
-  text-align: center;
-`;
-
-const ItemTitle = styled.h4`
-  color: #000000;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  text-align: center;
-  font-family: "Noto Serif TC", serif;
-`;
-
-const ItemContent = styled.p`
-  color: #414141;
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0;
-  text-align: center;
-  font-family: "Noto Serif TC", serif;
-`;
-
-const Summary = styled.div`
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  font-family: "Noto Serif TC", serif;
-  p {
-    color: #666;
-    line-height: 1.8;
-    margin: 0;
-  }
-`;
-const IconImage = styled.div`
-  width: 50px;
-  height: 50px;
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background-image: url(${(props) => props.src});
-  background-size: cover;
-  background-position: center;
-  z-index: 3;
-`;
-
-const DownloadButton = styled.button`
-  background-color: ${MAIN_COLOR};
-  color: white;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
-  margin-top: 10px;
-  cursor: pointer;
-  width: 100%;
-  font-family: "Noto Serif TC", serif;
-  font-size: 16px;
-
-  &:hover {
-    background-color: #45a049;
-  }
-`;
-
-const ResultContainer = styled.div`
-  background-color: #fdf6e9;
-  padding: 20px;
-  border-radius: 12px;
-`;
+  return (
+    <ModalOverlay onClick={() => onClose()}>
+      <ModalContent onClick={e => e.stopPropagation()}>
+        <ModalCloseButton onClick={onClose}>
+          <X size={20} />
+        </ModalCloseButton>
+        <ModalTitle>掃描 QR Code 下載分析結果</ModalTitle>
+        <QRCodeContainer>
+          <svg
+            width="100%"
+            height="100%"
+            viewBox="0 0 100 100"
+            dangerouslySetInnerHTML={{
+              __html: `
+                <rect width="100" height="100" fill="white"/>
+                <image href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" width="100" height="100" />
+              `
+            }}
+          />
+        </QRCodeContainer>
+        <ModalText>請在 10 分鐘內完成下載</ModalText>
+      </ModalContent>
+    </ModalOverlay>
+  );
+};
 
 const AnalysisResult = ({ result, imageUrl, onRetake }) => {
-  // const analysisData = result?.result;
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
   const resultRef = useRef(null);
 
   const getIconForBlock = (blockIndex) => {
@@ -165,24 +67,73 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
 
   const handleDownload = async () => {
     try {
+      setIsUploading(true);
+      
+      // 生成圖片
       const element = resultRef.current;
       const canvas = await html2canvas(element, {
-        backgroundColor: null,
-        scale: 2, // 提高解析度
-        useCORS: true, // 允許跨域圖片
+        backgroundColor: "#FDF6E9",
+        scale: 2,
+        useCORS: true,
         logging: false,
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
       });
-
-      const image = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = image;
-      link.download = "面相分析結果.png";
-      link.click();
+  
+      // 生成檔名
+      const timestamp = new Date().getTime();
+      const random = Math.floor(Math.random() * 1000);
+      const filename = `analysis-${timestamp}-${random}.png`;
+  
+      // 獲取上傳 URL
+      const urlResponse = await fetch(`${config.apiEndpoint}/uploadImage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: filename
+        })
+      });
+  
+      if (!urlResponse.ok) {
+        throw new Error('無法獲取上傳網址');
+      }
+  
+      const { uploadUrl } = await urlResponse.json();
+  
+      // 上傳圖片到 S3
+      const base64Data = canvas.toDataURL('image/png').split(',')[1];
+      const binaryData = atob(base64Data);
+      const arrayBuffer = new ArrayBuffer(binaryData.length);
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      for (let i = 0; i < binaryData.length; i++) {
+        uint8Array[i] = binaryData.charCodeAt(i);
+      }
+  
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: uint8Array,
+        headers: {
+          'Content-Type': 'image/png',
+        },
+      });
+  
+      if (!uploadResponse.ok) {
+        throw new Error('圖片上傳失敗');
+      }
+  
+      // 設置下載 URL 並顯示 QR code
+      const downloadUrl = `${config.apiEndpoint}/uploadImage?filename=${filename}`;
+      setDownloadUrl(downloadUrl);
+      setShowQRCode(true);
+  
     } catch (error) {
-      console.error("下載失敗:", error);
-      alert("圖片下載失敗，請稍後再試");
+      console.error('處理失敗:', error);
+      alert('圖片處理失敗，請稍後再試');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -256,8 +207,20 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
           </Summary>
         )}
       </ResultContainer>
-      <DownloadButton onClick={handleDownload}>下載分析結果</DownloadButton>
+      
+      <DownloadButton 
+        onClick={handleDownload}
+        disabled={isUploading}
+      >
+        {isUploading ? '處理中...' : '下載分析結果'}
+      </DownloadButton>
       <RetakeButton onClick={onRetake}>重新拍照</RetakeButton>
+
+      <QRCodeModal
+        url={downloadUrl}
+        isOpen={showQRCode}
+        onClose={() => setShowQRCode(false)}
+      />
     </Container>
   );
 };
