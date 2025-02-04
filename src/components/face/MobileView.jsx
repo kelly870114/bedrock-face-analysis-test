@@ -17,7 +17,7 @@ import {
   ImageContainer,
   ImageOverlay,
 } from "./styles-mobile";
-import Camera from "./Camera";
+import Camera from "../common/Camera/Camera";
 import AnalysisResult from "./AnalysisResult";
 
 const MobileView = () => {

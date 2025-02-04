@@ -127,7 +127,10 @@ const Camera = ({ onCapture, onClose }) => {
   // 停止相機
   const stopCamera = () => {
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach(track => {
+        track.stop();
+      });
+      streamRef.current = null;
     }
   };
 

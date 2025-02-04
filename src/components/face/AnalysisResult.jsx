@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import html2canvas from "html2canvas";
-import { X } from 'lucide-react';
-import { config } from '../../config';
+import { X } from "lucide-react";
+import { config } from "../../config";
 import {
   Container,
   ImageContainer,
@@ -20,10 +20,8 @@ import {
   ModalTitle,
   ModalCloseButton,
   QRCodeContainer,
-  ModalText
-} from './styles-result';
-
-
+  ModalText,
+} from "./styles-result";
 
 // QR Code Modal 組件
 const QRCodeModal = ({ url, isOpen, onClose }) => {
@@ -31,7 +29,7 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
 
   return (
     <ModalOverlay onClick={() => onClose()}>
-      <ModalContent onClick={e => e.stopPropagation()}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalCloseButton onClick={onClose}>
           <X size={20} />
         </ModalCloseButton>
@@ -44,8 +42,10 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
             dangerouslySetInnerHTML={{
               __html: `
                 <rect width="100" height="100" fill="white"/>
-                <image href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}" width="100" height="100" />
-              `
+                <image href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                  url
+                )}" width="100" height="100" />
+              `,
             }}
           />
         </QRCodeContainer>
@@ -55,11 +55,18 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
   );
 };
 
-const AnalysisResult = ({ result, imageUrl, onRetake }) => {
+const AnalysisResult = ({
+  result,
+  imageUrl,
+  onRetake,
+  isFromFortune = false,
+}) => {
   const [showQRCode, setShowQRCode] = useState(false);
-  const [downloadUrl, setDownloadUrl] = useState('');
+  const [downloadUrl, setDownloadUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const resultRef = useRef(null);
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventId = urlParams.get('event');
 
   const getIconForBlock = (blockIndex) => {
     return `/face_${blockIndex}_white.png`;
@@ -68,7 +75,7 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
   const handleDownload = async () => {
     try {
       setIsUploading(true);
-      
+
       // 生成圖片
       const element = resultRef.current;
       const canvas = await html2canvas(element, {
@@ -79,59 +86,58 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
         windowWidth: element.scrollWidth,
         windowHeight: element.scrollHeight,
       });
-  
+
       // 生成檔名
       const timestamp = new Date().getTime();
       const random = Math.floor(Math.random() * 1000);
       const filename = `analysis-${timestamp}-${random}.png`;
-  
+
       // 獲取上傳 URL
       const urlResponse = await fetch(`${config.apiEndpoint}/uploadImage`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          filename: filename
-        })
+          filename: filename,
+        }),
       });
-  
+
       if (!urlResponse.ok) {
-        throw new Error('無法獲取上傳網址');
+        throw new Error("無法獲取上傳網址");
       }
-  
+
       const { uploadUrl } = await urlResponse.json();
-  
+
       // 上傳圖片到 S3
-      const base64Data = canvas.toDataURL('image/png').split(',')[1];
+      const base64Data = canvas.toDataURL("image/png").split(",")[1];
       const binaryData = atob(base64Data);
       const arrayBuffer = new ArrayBuffer(binaryData.length);
       const uint8Array = new Uint8Array(arrayBuffer);
-      
+
       for (let i = 0; i < binaryData.length; i++) {
         uint8Array[i] = binaryData.charCodeAt(i);
       }
-  
+
       const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
+        method: "PUT",
         body: uint8Array,
         headers: {
-          'Content-Type': 'image/png',
+          "Content-Type": "image/png",
         },
       });
-  
+
       if (!uploadResponse.ok) {
-        throw new Error('圖片上傳失敗');
+        throw new Error("圖片上傳失敗");
       }
-  
+
       // 設置下載 URL 並顯示 QR code
       const downloadUrl = `${config.apiEndpoint}/uploadImage?filename=${filename}`;
       setDownloadUrl(downloadUrl);
       setShowQRCode(true);
-  
     } catch (error) {
-      console.error('處理失敗:', error);
-      alert('圖片處理失敗，請稍後再試');
+      console.error("處理失敗:", error);
+      alert("圖片處理失敗，請稍後再試");
     } finally {
       setIsUploading(false);
     }
@@ -207,14 +213,21 @@ const AnalysisResult = ({ result, imageUrl, onRetake }) => {
           </Summary>
         )}
       </ResultContainer>
-      
-      <DownloadButton 
-        onClick={handleDownload}
-        disabled={isUploading}
-      >
-        {isUploading ? '處理中...' : '下載分析結果'}
+
+      <DownloadButton onClick={handleDownload} disabled={isUploading}>
+        {isUploading ? "處理中..." : "下載分析結果"}
       </DownloadButton>
-      <RetakeButton onClick={onRetake}>重新拍照</RetakeButton>
+      {isFromFortune ? (
+        <RetakeButton 
+          onClick={() => window.location.href = `/fortune/mobile?event=${eventId}`}
+        >
+          重新抽籤
+        </RetakeButton>
+      ) : (
+        <RetakeButton onClick={onRetake}>
+          重新拍照
+        </RetakeButton>
+      )}
 
       <QRCodeModal
         url={downloadUrl}

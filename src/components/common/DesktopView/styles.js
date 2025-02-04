@@ -70,13 +70,6 @@ export const Instruction = styled.p`
   }
 `;
 
-export const Footer = styled.footer`
-  margin-top: 2rem;
-  text-align: center;
-  color: #9ca3af;
-  font-size: 0.875rem;
-`;
-
 export const Input = styled.input`
   width: 80%;
   padding: 12px;
@@ -98,7 +91,6 @@ export const Input = styled.input`
 `;
 
 export const Button = styled.button`
-  width: 100%;
   padding: 12px;
   background-color: #000000;
   color: white;
@@ -116,6 +108,18 @@ export const Button = styled.button`
   &:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
+  }
+`;
+
+export const ButtonGroup = styled.div`
+  display: flex;
+  gap: 16px;
+  width: 80%;
+  margin: 0 auto;
+  
+  ${Button} {
+    flex: 1;
+    white-space: nowrap;
   }
 `;
 
@@ -151,4 +155,11 @@ export const EventTitle = styled.div`
       background-color: #f3f4f6;
     }
   }
+`;
+
+export const Footer = styled.footer`
+  text-align: center;
+  padding: 20px;
+  color: #9ca3af;
+  font-size: 0.875rem;
 `;
