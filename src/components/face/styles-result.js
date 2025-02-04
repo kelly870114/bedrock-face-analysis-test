@@ -3,10 +3,15 @@ import styled, { createGlobalStyle } from 'styled-components';
 const MAIN_COLOR = "#C84B31";
 
 export const Container = styled.div`
-  padding: 5%;
-  margin: 2% auto;
-  width: 90%;
-  max-width: 400px;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  
+  @media (max-width: 450px) {
+    padding: 10px;
+  }
 `;
 
 export const ImageContainer = styled.div`
@@ -49,10 +54,13 @@ export const AnalysisBlock = styled.div`
   border: 2px solid ${MAIN_COLOR};
   border-radius: 12px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 export const BlockTitle = styled.div`
-  position: center;
+  position: relative;
   margin: 0 auto 20px;
   background: #fff7e6;
   padding: 5px 20px;
@@ -61,24 +69,50 @@ export const BlockTitle = styled.div`
   color: #000000;
   font-size: 18px;
   font-weight: 500;
-  text-align: center;
   font-family: "Noto Serif TC", serif;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   width: fit-content;
-  min-width: 200px;
-  max-width: 80%;
+  min-width: min(200px, 90%);
+  max-width: 90%;
+  box-sizing: border-box;
+  position: relative; // 用於定位裝飾圖示
 
+  // 裝飾圖示使用絕對定位
   .title-icon {
     width: 18px;
     height: 18px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &:first-child {
+      left: 12px;
+    }
+
+    &:last-child {
+      right: 12px;
+    }
   }
 
   .title-text {
-    flex: 1;
+    display: block;
     text-align: center;
+    padding: 0 30px; // 為兩側的圖示預留空間
+    word-wrap: break-word; // 允許長單詞換行
+    hyphens: auto; // 允許斷字
+  }
+
+  @media (max-width: 350px) {
+    padding: 5px 12px;
+    font-size: 16px;
+
+    .title-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .title-text {
+      padding: 0 25px; // 調整間距
+    }
   }
 `;
 
@@ -154,9 +188,15 @@ export const DownloadButton = styled.button`
 `;
 
 export const ResultContainer = styled.div`
-  background-color: #fdf6e9;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  box-sizing: border-box;
   padding: 20px;
-  border-radius: 12px;
+
+  @media (max-width: 500px) {
+    padding: 10px;
+  }
 `;
 
 // Modal 相關樣式

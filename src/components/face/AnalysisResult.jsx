@@ -66,7 +66,7 @@ const AnalysisResult = ({
   const [isUploading, setIsUploading] = useState(false);
   const resultRef = useRef(null);
   const urlParams = new URLSearchParams(window.location.search);
-  const eventId = urlParams.get('event');
+  const eventId = urlParams.get("event");
 
   const getIconForBlock = (blockIndex) => {
     return `/face_${blockIndex}_white.png`;
@@ -76,16 +76,22 @@ const AnalysisResult = ({
     try {
       setIsUploading(true);
 
-      // 生成圖片
+      // 重要：先設置固定寬度
       const element = resultRef.current;
+      const originalWidth = element.style.width;
+      element.style.width = "450px"; // 設置固定寬度
+
+      // 生成圖片
       const canvas = await html2canvas(element, {
         backgroundColor: "#FDF6E9",
         scale: 2,
         useCORS: true,
         logging: false,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
+        width: 450, // 明確指定寬度
+        windowWidth: 450, // 明確指定視窗寬度
       });
+
+      element.style.width = originalWidth;
 
       // 生成檔名
       const timestamp = new Date().getTime();
@@ -218,15 +224,15 @@ const AnalysisResult = ({
         {isUploading ? "處理中..." : "下載分析結果"}
       </DownloadButton>
       {isFromFortune ? (
-        <RetakeButton 
-          onClick={() => window.location.href = `/fortune/mobile?event=${eventId}`}
+        <RetakeButton
+          onClick={() =>
+            (window.location.href = `/fortune/mobile?event=${eventId}`)
+          }
         >
           重新抽籤
         </RetakeButton>
       ) : (
-        <RetakeButton onClick={onRetake}>
-          重新拍照
-        </RetakeButton>
+        <RetakeButton onClick={onRetake}>重新拍照</RetakeButton>
       )}
 
       <QRCodeModal

@@ -38,9 +38,6 @@ export const AnalysisBlock = styled.div`
   border: 2px solid ${MAIN_COLOR};
   border-radius: 12px;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 `;
 
 export const BlockTitle = styled.div`
@@ -53,26 +50,50 @@ export const BlockTitle = styled.div`
   color: #000000;
   font-size: 18px;
   font-weight: 500;
-  text-align: center;
   font-family: "Noto Serif TC", serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;  // 修改：確保內容水平居中
-  gap: 8px;
   width: fit-content;
-  min-width: 200px;
-  max-width: 80%;
+  min-width: min(200px, 90%);
+  max-width: 90%;
+  box-sizing: border-box;
+  position: relative; // 用於定位裝飾圖示
 
-  .title-text {
-    flex: 1;
-    text-align: center;
-    margin: 0 auto;  // 新增：確保文字居中
-  }
-
+  // 裝飾圖示使用絕對定位
   .title-icon {
     width: 18px;
     height: 18px;
-    flex-shrink: 0;  // 新增：防止圖標被壓縮
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    &:first-child {
+      left: 12px;
+    }
+
+    &:last-child {
+      right: 12px;
+    }
+  }
+
+  .title-text {
+    display: block;
+    text-align: center;
+    padding: 0 30px; // 為兩側的圖示預留空間
+    word-wrap: break-word; // 允許長單詞換行
+    hyphens: auto; // 允許斷字
+  }
+
+  @media (max-width: 350px) {
+    padding: 5px 12px;
+    font-size: 16px;
+
+    .title-icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    .title-text {
+      padding: 0 25px; // 調整間距
+    }
   }
 `;
 
@@ -193,40 +214,31 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  background: #FDF6E9;
-  padding: 36px 24px 24px;
+  background: white;
+  padding: 24px;
   border-radius: 12px;
   width: 90%;
   max-width: 320px;
   position: relative;
-  border: 2px solid ${MAIN_COLOR};
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 `;
 
 export const ModalTitle = styled.h3`
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   font-family: "Noto Serif TC", serif;
-  font-size: 20px;
+  font-size: 18px;
   color: ${MAIN_COLOR};
-  width: 100%;
 `;
 
 export const ModalCloseButton = styled.button`
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 8px;
+  right: 8px;
   background: none;
   border: none;
   cursor: pointer;
   color: #666;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 4px;
   
   &:hover {
     color: #000;

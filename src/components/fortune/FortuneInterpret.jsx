@@ -182,12 +182,12 @@ const FortuneInterpret = ({
         windowHeight: element.scrollHeight,
       });
 
-      // Generate filename
+      // 生成檔名
       const timestamp = new Date().getTime();
       const random = Math.floor(Math.random() * 1000);
       const filename = `fortune-analysis-${timestamp}-${random}.png`;
 
-      // Get upload URL
+      // 獲取上傳 URL
       const urlResponse = await fetch(`${config.apiEndpoint}/uploadImage`, {
         method: "POST",
         headers: {
@@ -204,7 +204,7 @@ const FortuneInterpret = ({
 
       const { uploadUrl } = await urlResponse.json();
 
-      // Upload image to S3
+      // 上傳圖片到 S3
       const base64Data = canvas.toDataURL("image/png").split(",")[1];
       const binaryData = atob(base64Data);
       const arrayBuffer = new ArrayBuffer(binaryData.length);
@@ -226,7 +226,7 @@ const FortuneInterpret = ({
         throw new Error("圖片上傳失敗");
       }
 
-      // Set download URL and show QR code
+      // 設置下載 URL 並顯示 QR code
       const downloadUrl = `${config.apiEndpoint}/uploadImage?filename=${filename}`;
       setDownloadUrl(downloadUrl);
       setShowQRCode(true);
