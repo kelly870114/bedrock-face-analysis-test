@@ -15,7 +15,6 @@ import {
   ItemContent,
   IconImage,
   ActionButton,
-  LoadingOverlay,
   ButtonContainer,
   ModalOverlay,
   ModalContent,
@@ -171,23 +170,42 @@ const FortuneInterpret = ({
     try {
       setIsUploading(true);
 
-      // Generate image
       const element = resultRef.current;
-      const canvas = await html2canvas(element, {
+      const originalWidth = element.offsetWidth;
+      const originalHeight = element.offsetHeight;
+      
+      const container = document.createElement('div');
+      container.style.width = `${originalWidth}px`;
+      container.style.position = 'absolute';
+      container.style.left = '-9999px';
+      container.style.top = '-9999px';
+      
+      const clone = element.cloneNode(true);
+      container.appendChild(clone);
+      document.body.appendChild(container);
+
+      const canvas = await html2canvas(clone, {
         backgroundColor: "#FDF6E9",
         scale: 2,
         useCORS: true,
         logging: false,
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
+        width: originalWidth,
+        height: originalHeight,
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.body.querySelector('[class*="ResultContainer"]');
+          if (clonedElement) {
+            clonedElement.style.width = `${originalWidth}px`;
+            clonedElement.style.height = `${originalHeight}px`;
+          }
+        }
       });
 
-      // 生成檔名
+      document.body.removeChild(container);
+
       const timestamp = new Date().getTime();
       const random = Math.floor(Math.random() * 1000);
       const filename = `fortune-analysis-${timestamp}-${random}.png`;
 
-      // 獲取上傳 URL
       const urlResponse = await fetch(`${config.apiEndpoint}/uploadImage`, {
         method: "POST",
         headers: {
@@ -204,7 +222,6 @@ const FortuneInterpret = ({
 
       const { uploadUrl } = await urlResponse.json();
 
-      // 上傳圖片到 S3
       const base64Data = canvas.toDataURL("image/png").split(",")[1];
       const binaryData = atob(base64Data);
       const arrayBuffer = new ArrayBuffer(binaryData.length);
@@ -226,7 +243,6 @@ const FortuneInterpret = ({
         throw new Error("圖片上傳失敗");
       }
 
-      // 設置下載 URL 並顯示 QR code
       const downloadUrl = `${config.apiEndpoint}/uploadImage?filename=${filename}`;
       setDownloadUrl(downloadUrl);
       setShowQRCode(true);
@@ -268,10 +284,21 @@ const FortuneInterpret = ({
   return (
     <Container>
       <ImageContainer>
-        <img 
-          src={`/jenn-ai/${String(fortuneNumber).padStart(2, '0')}.png`} 
-          alt={`第${fortuneNumber}籤`}
-        />
+        {capturedImage ? (
+          <div className="image-wrapper">
+            <img src={capturedImage} alt="captured" />
+            {isAnalyzing && (
+              <div className="analysis-overlay">
+                分析中...
+              </div>
+            )}
+          </div>
+        ) : (
+          <img 
+            src={`/jenn-ai/${String(fortuneNumber).padStart(2, '0')}.png`} 
+            alt={`第${fortuneNumber}籤`}
+          />
+        )}
       </ImageContainer>
 
       <ResultContainer ref={resultRef}>
@@ -345,12 +372,6 @@ const FortuneInterpret = ({
           onCapture={handleCombineAnalysis}
           onClose={() => setShowCamera(false)}
         />
-      )}
-
-      {isAnalyzing && (
-        <LoadingOverlay>
-          分析中...
-        </LoadingOverlay>
       )}
 
       <QRCodeModal

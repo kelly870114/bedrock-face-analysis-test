@@ -1,6 +1,12 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 export const MAIN_COLOR = '#C84B31';
+
+const fadeInOut = keyframes`
+  0% { opacity: 0.7; }
+  50% { opacity: 1; }
+  100% { opacity: 0.7; }
+`;
 
 export const Container = styled.div`
   padding: 5%;
@@ -10,15 +16,37 @@ export const Container = styled.div`
 `;
 
 export const ImageContainer = styled.div`
-  width: 45%;
+  width: ${props => props.children?.type === 'img' ? '45%' : '90%'};
   margin: 0 auto 20px;
   border-radius: 8px;
   overflow: hidden;
+
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+  }
 
   img {
     width: 100%;
     height: auto;
     object-fit: cover;
+    display: block;
+  }
+
+  .analysis-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    font-weight: 500;
+    animation: ${fadeInOut} 2s infinite ease-in-out;
   }
 `;
 
@@ -48,7 +76,7 @@ export const BlockTitle = styled.div`
   border: 2px solid ${MAIN_COLOR};
   border-radius: 20px;
   color: #000000;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 500;
   font-family: "Noto Serif TC", serif;
   width: fit-content;

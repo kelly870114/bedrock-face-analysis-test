@@ -68,11 +68,11 @@ const FortuneMobileView = () => {
           {!showResult ? (
             <>
               <TitleContainer>
-                <img src="/app_title.png" alt="解籤大師" />
+                <img src="/app_title_fortune.png" alt="解籤大師" />
               </TitleContainer>
 
               <LogoContainer>
-                <img src="/mobile_logo.png" alt="解籤大師圖示" />
+                <img src="/mobile_logo_fortune.png" alt="解籤大師圖示" />
               </LogoContainer>
 
               <FormContainer>
