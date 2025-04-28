@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Camera as CameraIcon } from "lucide-react";
 import { config } from "../../config";
+import { connectIoT } from "../utils/iotService";
+import Camera from "../common/Camera/Camera";
 import {
   PageWrapper,
   ChineseContainer,
@@ -16,8 +18,20 @@ import {
   CameraButton,
   ImageContainer,
   ImageOverlay,
+  ProgressContainer,
+  ProgressItem,
+  RetakeButton,
+  ErrorMessage,
+  //
+  AnalysisBlock,
+  IconImage,
+  BlockTitle,
+  ContentItem,
+  ItemTitle,
+  ItemContent,
+  Summary
+
 } from "./styles-mobile";
-import Camera from "../common/Camera/Camera";
 import AnalysisResult from "./AnalysisResult";
 
 const MobileView = () => {
@@ -29,61 +43,35 @@ const MobileView = () => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [eventInfo, setEventInfo] = useState(null);
-  const [analysisId, setAnalysisId] = useState(null);
-  const wsRef = useRef(null);
-
-  // WebSocket connection function
-  const connectWebSocket = (analysis_id) => {
-    const wsUrl = `wss://tppx6nu3cg.execute-api.us-east-1.amazonaws.com/prod?analysis_id=${analysis_id}`;
-    const ws = new WebSocket(wsUrl);
-
-    ws.onopen = () => {
-      console.log("WebSocket connected");
-    };
-
-    ws.onmessage = (event) => {
-      console.log("Raw WebSocket message:", event.data);
-      const data = JSON.parse(event.data);
-      console.log("Received WebSocket message:", data);
-
-      if (data.status === "completed") {
-        // console.log('Setting analysis result:', data.result);
-        setAnalysisResult(data.result);
-        setIsAnalyzing(false);
-      } else if (data.status === "failed") {
-        setError(data.error);
-        setIsAnalyzing(false);
-      }
-    };
-
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      setError("連線錯誤，請重試");
-      setIsAnalyzing(false);
-    };
-
-    ws.onclose = () => {
-      console.log("WebSocket disconnected");
-    };
-
-    wsRef.current = ws;
-    return ws;
-  };
-
-  // check if event id exists
+  const [sessionId, setSessionId] = useState(null);
+  const [eventId, setEventId] = useState(null);
+  
+  // 階段狀態
+  const [stageStatus, setStageStatus] = useState({
+    faceShape: { status: 'pending', result: null },
+    features: { status: 'pending', result: null },
+    overall: { status: 'pending', result: null, summary: null }
+  });
+  
+  // IoT 連接引用
+  const iotClientRef = useRef(null);
+  
+  // 檢查活動存在性和訪問權限
   useEffect(() => {
     const checkEventAccess = async () => {
       try {
-        const eventId = searchParams.get("event");
+        const eventIdFromParams = searchParams.get("event");
 
-        if (!eventId) {
+        if (!eventIdFromParams) {
           setError("無效的活動代碼");
           setIsLoading(false);
           return;
         }
 
+        setEventId(eventIdFromParams);
+
         const response = await fetch(
-          `${config.apiEndpoint}/checkEvent?event=${eventId}`,
+          `${config.apiEndpoint}/checkEvent?event=${eventIdFromParams}`,
           {
             method: "GET",
             mode: "cors",
@@ -119,16 +107,107 @@ const MobileView = () => {
 
     checkEventAccess();
   }, [searchParams]);
-
-  // Cleanup WebSocket on component unmount
+  
+  // 組件卸載時清理 IoT 連接
   useEffect(() => {
     return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
+      if (iotClientRef.current) {
+        iotClientRef.current.disconnect();
       }
     };
   }, []);
+  
+  // 設置 IoT 連接和訂閱
+  const setupIoTConnection = async (newSessionId) => {
+    try {
+      // 先清理舊連接
+      if (iotClientRef.current) {
+        iotClientRef.current.disconnect();
+      }
+      
+      // 創建新連接
+      const iotClient = await connectIoT(newSessionId, {
+        onStatus: handleStatusUpdate,
+        onStageResult: handleStageResult,
+        onError: handleIoTError,
+        onComplete: handleAnalysisComplete,
+        onConnectionError: handleConnectionError
+      });
+      
+      iotClientRef.current = iotClient;
+      console.log(`成功連接到 IoT 並訂閱 ${newSessionId} 相關主題`);
+    } catch (error) {
+      console.error("IoT 連接設置失敗:", error);
+      setError("連接分析服務失敗，請重試");
+      setIsAnalyzing(false);
+    }
+  };
+  
+  // 處理連接錯誤
+  const handleConnectionError = (err) => {
+    console.error("IoT 連接錯誤:", err);
+    setError("分析服務連接中斷，請重試");
+    setIsAnalyzing(false);
+  };
+  
+  // 處理狀態更新
+  const handleStatusUpdate = (data) => {
+    console.log("狀態更新:", data);
+    const { stage, status } = data;
+    if (stage && status) {
+      setStageStatus(prev => ({
+        ...prev,
+        [stage]: { ...prev[stage], status }
+      }));
+    }
+  };
+  
+  // 處理階段結果
+  const handleStageResult = (stage, data) => {
+    console.log(`接收到 ${stage} 階段結果:`, data);
+    if (data.result) {
+      setStageStatus(prev => ({
+        ...prev,
+        [stage]: { 
+          ...prev[stage], 
+          status: 'completed', 
+          result: data.result,
+          summary: data.summary || prev[stage].summary
+        }
+      }));
+    }
+  };
+  
+  // 處理錯誤
+  const handleIoTError = (data) => {
+    console.error("分析錯誤:", data);
+    const { stage, error: errorMsg } = data;
+    if (stage) {
+      setStageStatus(prev => ({
+        ...prev,
+        [stage]: { ...prev[stage], status: 'failed', error: errorMsg }
+      }));
+    }
+    setError(errorMsg || "分析過程中出現錯誤");
+  };
+  
+  // 處理分析完成
+  const handleAnalysisComplete = (data) => {
+    console.log("分析完成:", data);
+    
+    // 組合完整結果
+    const fullResult = {
+      faceShape: stageStatus.faceShape.result,
+      features: stageStatus.features.result,
+      overall: stageStatus.overall.result,
+      summary: stageStatus.overall.summary
+    };
+    
+    setAnalysisResult(fullResult);
+    setIsAnalyzing(false);
+  };
 
+  // 處理照片拍攝
   const handleCapture = async (blob) => {
     try {
       setIsAnalyzing(true);
@@ -142,24 +221,31 @@ const MobileView = () => {
       const reader = new FileReader();
       const base64Promise = new Promise((resolve, reject) => {
         reader.onloadend = () => {
-          // 取得 base64 字串部分（去掉 data:image/jpeg;base64, 前綴）
-          const base64data = reader.result.split(",")[1];
+          const base64data = reader.result.split(',')[1];
           resolve(base64data);
         };
         reader.onerror = reject;
+        reader.readAsDataURL(blob);
       });
-      reader.readAsDataURL(blob);
 
       const base64data = await base64Promise;
 
+      // 重置階段狀態
+      setStageStatus({
+        faceShape: { status: 'pending', result: null },
+        features: { status: 'pending', result: null },
+        overall: { status: 'pending', result: null, summary: null }
+      });
+
       // 發送到後端
-      const response = await fetch(`${config.apiEndpoint}/analyze`, {
+      const response = await fetch(`${config.apiEndpoint}/faceAnalysis`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           image: base64data,
+          event_id: eventId
         }),
       });
 
@@ -168,30 +254,151 @@ const MobileView = () => {
       }
 
       const data = await response.json();
-      console.log("Response data:", data);
-
-      setAnalysisId(data.analysis_id);
-      connectWebSocket(data.analysis_id);
+      console.log("分析請求回應:", data);
+      
+      if (data.session_id) {
+        const newSessionId = data.session_id;
+        setSessionId(newSessionId);
+        
+        // 設置 IoT 連接
+        await setupIoTConnection(newSessionId);
+      } else {
+        throw new Error("回應中缺少 session_id");
+      }
+      
     } catch (error) {
-      console.error("Error:", error);
+      console.error("圖片處理或分析請求錯誤:", error);
       setError(error.message || "分析失敗");
       setIsAnalyzing(false);
     }
   };
-
-  // handle retake photo
+  
+  // 處理重拍
   const handleRetake = () => {
+    // 清理舊資源
     if (capturedImage) {
       URL.revokeObjectURL(capturedImage);
     }
-    if (wsRef.current) {
-      wsRef.current.close();
+    
+    // 斷開 IoT 連接
+    if (iotClientRef.current) {
+      iotClientRef.current.disconnect();
+      iotClientRef.current = null;
     }
+    
+    // 重置所有狀態
     setCapturedImage(null);
     setAnalysisResult(null);
     setError(null);
-    setAnalysisId(null);
+    setSessionId(null);
+    setStageStatus({
+      faceShape: { status: 'pending', result: null },
+      features: { status: 'pending', result: null },
+      overall: { status: 'pending', result: null, summary: null }
+    });
+    
+    // 打開相機
     setShowCamera(true);
+  };
+  
+  // 渲染分析進度
+  const renderAnalysisProgress = () => {
+    return (
+      <ProgressContainer>
+        {Object.entries(stageStatus).map(([stage, { status }]) => {
+          const stageName = {
+            faceShape: '臉型比例分析',
+            features: '五官特徵分析',
+            overall: '運勢發展評析'
+          }[stage];
+          
+          const statusText = {
+            pending: '等待中',
+            processing: '分析中...',
+            completed: '✓ 完成',
+            failed: '× 失敗'
+          }[status];
+          
+          return (
+            <ProgressItem key={stage} status={status}>
+              <div className="stage-name">{stageName}</div>
+              <div className="stage-status">{statusText}</div>
+            </ProgressItem>
+          );
+        })}
+      </ProgressContainer>
+    );
+  };
+  
+  // 渲染階段結果
+  const renderStageResults = () => {
+    return (
+      <div className="stage-results">
+        {stageStatus.faceShape.status === 'completed' && stageStatus.faceShape.result && (
+          <AnalysisBlock>
+            <IconImage src="/face_1_white.png" />
+            <BlockTitle>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <span className="title-text">{stageStatus.faceShape.result.title}</span>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            </BlockTitle>
+            {Object.entries(stageStatus.faceShape.result.content || {}).map(([key, value]) => (
+              <ContentItem key={key}>
+                <ItemTitle>{key}</ItemTitle>
+                <ItemContent>{value}</ItemContent>
+              </ContentItem>
+            ))}
+          </AnalysisBlock>
+        )}
+        
+        {stageStatus.features.status === 'completed' && stageStatus.features.result && (
+          <AnalysisBlock>
+            <IconImage src="/face_2_white.png" />
+            <BlockTitle>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <span className="title-text">{stageStatus.features.result.title}</span>
+              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            </BlockTitle>
+            {Object.entries(stageStatus.features.result.content || {}).map(([key, value]) => (
+              <ContentItem key={key}>
+                <ItemTitle>{key}</ItemTitle>
+                <ItemContent>{value}</ItemContent>
+              </ContentItem>
+            ))}
+          </AnalysisBlock>
+        )}
+        
+        {stageStatus.overall.status === 'completed' && stageStatus.overall.result && (
+          <>
+            <AnalysisBlock>
+              <IconImage src="/face_3_white.png" />
+              <BlockTitle>
+                <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+                <span className="title-text">{stageStatus.overall.result.title}</span>
+                <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              </BlockTitle>
+              {Object.entries(stageStatus.overall.result.content || {}).map(([key, value]) => (
+                <ContentItem key={key}>
+                  <ItemTitle>{key}</ItemTitle>
+                  <ItemContent>{value}</ItemContent>
+                </ContentItem>
+              ))}
+            </AnalysisBlock>
+            
+            {stageStatus.overall.summary && (
+              <Summary>
+                <BlockTitle>
+                  <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+                  <span className="title-text">整體評析</span>
+                  <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+                </BlockTitle>
+                <p>{stageStatus.overall.summary}</p>
+              </Summary>
+            )}
+          </>
+        )}
+      </div>
+    );
   };
 
   // loading
@@ -208,7 +415,7 @@ const MobileView = () => {
   }
 
   // Error (including event not opened)
-  if (error) {
+  if (error && !isAnalyzing) {
     return (
       <Container>
         <Content>
@@ -259,15 +466,29 @@ const MobileView = () => {
           )}
 
           {isAnalyzing && (
-            <ImageContainer>
-              <div className="image-wrapper">
-                <img src={capturedImage} alt="captured" />
-                <ImageOverlay>分析中...</ImageOverlay>
-              </div>
-            </ImageContainer>
+            <div className="analysis-in-progress">
+              <ImageContainer>
+                <div className="image-wrapper">
+                  <img src={capturedImage} alt="captured" />
+                  {!stageStatus.overall.result && !error && (
+                    <ImageOverlay>分析中...</ImageOverlay>
+                  )}
+                </div>
+              </ImageContainer>
+              
+              {renderAnalysisProgress()}
+              {renderStageResults()}
+              
+              {error && (
+                <ErrorMessage>
+                  <p>{error}</p>
+                  <RetakeButton onClick={handleRetake}>重新拍照</RetakeButton>
+                </ErrorMessage>
+              )}
+            </div>
           )}
 
-          {analysisResult && (
+          {analysisResult && !isAnalyzing && (
             <AnalysisResult
               result={analysisResult}
               imageUrl={capturedImage}
