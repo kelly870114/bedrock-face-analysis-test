@@ -189,6 +189,7 @@ export const ButtonGroup = styled.div`
   justify-content: center;
   gap: 12px;
   margin: 0 auto;
+  flex-wrap: wrap;
 `;
 
 export const CategoryButton = styled.button`
@@ -204,6 +205,7 @@ export const CategoryButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
+  margin-bottom: 8px;
 
   &:hover {
     background-color: ${props => props.selected ? '#B85C38' : '#fff0e6'};
@@ -308,5 +310,35 @@ export const NumberInput = styled(Input)`
   
   &::placeholder {
     color: #999;
+  }
+`;
+
+// 新增數字按鈕網格
+export const NumberButtonGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin: 0 0 20px;
+  width: 100%;
+  max-width: 300px;
+`;
+
+// 新增數字按鈕
+export const NumberButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  border: 2px solid ${MAIN_COLOR};
+  background-color: ${props => props.selected ? MAIN_COLOR : 'transparent'};
+  color: ${props => props.selected ? 'white' : MAIN_COLOR};
+  font-size: 16px;
+  font-family: 'Noto Serif TC', serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: ${props => props.selected ? '#B85C38' : '#fff0e6'};
   }
 `;

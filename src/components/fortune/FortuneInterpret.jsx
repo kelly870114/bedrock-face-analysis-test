@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { config } from '../../config';
 import Camera from '../common/Camera/Camera';
 import AnalysisResult from '../face/AnalysisResult';
+import { useTranslation, translateError } from "../../i18n";
 import {
   Container,
   ImageContainer,
@@ -22,10 +23,13 @@ import {
   ModalCloseButton,
   QRCodeContainer,
   ModalText,
+  LoadingOverlay
 } from './styles-fortune-interpret';
 
 // QR Code Modal Component
-const QRCodeModal = ({ url, isOpen, onClose }) => {
+const QRCodeModal = ({ url, isOpen, onClose, lang }) => {
+  const { t } = useTranslation(lang);
+  
   if (!isOpen) return null;
 
   return (
@@ -34,7 +38,7 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
         <ModalCloseButton onClick={onClose}>
           <X size={20} />
         </ModalCloseButton>
-        <ModalTitle>掃描 QR Code 下載分析結果</ModalTitle>
+        <ModalTitle>{t("fortuneTelling.scanToDownload")}</ModalTitle>
         <QRCodeContainer>
           <svg
             width="100%"
@@ -50,7 +54,7 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
             }}
           />
         </QRCodeContainer>
-        <ModalText>請在 10 分鐘內完成下載</ModalText>
+        <ModalText>{t("fortuneTelling.downloadExpiration")}</ModalText>
       </ModalContent>
     </ModalOverlay>
   );
@@ -60,8 +64,10 @@ const FortuneInterpret = ({
   name, 
   category, 
   fortuneNumber,
-  interpretation
+  interpretation,
+  lang // 新增語言參數
 }) => {
+  const { t } = useTranslation(lang); // 使用翻譯 Hook
   const [showCamera, setShowCamera] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -69,14 +75,25 @@ const FortuneInterpret = ({
   const [showQRCode, setShowQRCode] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null);
   const wsRef = useRef(null);
   const resultRef = useRef(null);
 
+  // 確保解釋內容已載入
+  const [isContentReady, setIsContentReady] = useState(false);
+  
+  useEffect(() => {
+    // 檢查解釋內容是否已載入
+    if (interpretation && interpretation.analysis) {
+      setIsContentReady(true);
+    }
+  }, [interpretation]);
+
   const categoryText = {
-    love: '愛情',
-    career: '事業',
-    wealth: '財運'
-  }[category];
+    love: t("fortuneTelling.category.love"),
+    career: t("fortuneTelling.category.career"),
+    wealth: t("fortuneTelling.category.wealth")
+  };
 
   // WebSocket connection setup
   const connectWebSocket = (analysisId) => {
@@ -94,14 +111,14 @@ const FortuneInterpret = ({
         setIsAnalyzing(false);
       } else if (data.status === 'failed') {
         setIsAnalyzing(false);
-        alert(data.error || '分析失敗');
+        setError(translateError(data.error, lang) || t("fortuneTelling.analysisFailed"));
       }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
       setIsAnalyzing(false);
-      alert('連線錯誤，請重試');
+      setError(t("common.connectionError"));
     };
 
     wsRef.current = ws;
@@ -119,6 +136,7 @@ const FortuneInterpret = ({
     try {
       setShowCamera(false);
       setIsAnalyzing(true);
+      setError(null);
   
       const imageUrl = URL.createObjectURL(blob);
       setCapturedImage(imageUrl);
@@ -139,7 +157,8 @@ const FortuneInterpret = ({
         },
         body: JSON.stringify({
           image: base64data,
-          fortune_analysis_id: interpretation.fortune_analysis_id
+          fortune_analysis_id: interpretation.fortune_analysis_id,
+          lang: lang // 添加語言參數
         })
       });
   
@@ -147,21 +166,21 @@ const FortuneInterpret = ({
         const errorData = await response.json().catch(() => null);
         throw new Error(
           errorData?.error || 
-          `API 請求失敗 (${response.status}: ${response.statusText})`
+          t("fortuneTelling.requestFailed", { status: response.status, statusText: response.statusText })
         );
       }
   
       const data = await response.json();
       
       if (!data.analysis_id) {
-        throw new Error('回應中缺少 analysis_id');
+        throw new Error(t("fortuneTelling.missingAnalysisId"));
       }
   
       connectWebSocket(data.analysis_id);
   
     } catch (error) {
       console.error('Error details:', error);
-      alert(`分析失敗: ${error.message}`);
+      setError(translateError(error.message, lang) || t("fortuneTelling.analysisFailed"));
       setIsAnalyzing(false);
     }
   };
@@ -169,6 +188,7 @@ const FortuneInterpret = ({
   const handleDownload = async () => {
     try {
       setIsUploading(true);
+      setError(null);
 
       const element = resultRef.current;
       const originalWidth = element.offsetWidth;
@@ -217,7 +237,7 @@ const FortuneInterpret = ({
       });
 
       if (!urlResponse.ok) {
-        throw new Error("無法獲取上傳網址");
+        throw new Error(t("fortuneTelling.cannotGetUploadUrl"));
       }
 
       const { uploadUrl } = await urlResponse.json();
@@ -240,7 +260,7 @@ const FortuneInterpret = ({
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("圖片上傳失敗");
+        throw new Error(t("fortuneTelling.imageUploadFailed"));
       }
 
       const downloadUrl = `${config.apiEndpoint}/uploadImage?filename=${filename}`;
@@ -248,7 +268,7 @@ const FortuneInterpret = ({
       setShowQRCode(true);
     } catch (error) {
       console.error("處理失敗:", error);
-      alert("圖片處理失敗，請稍後再試");
+      setError(translateError(error.message, lang) || t("fortuneTelling.processingFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -263,6 +283,7 @@ const FortuneInterpret = ({
     }
     setCapturedImage(null);
     setAnalysisResult(null);
+    setError(null);
     setShowCamera(true);
   };
 
@@ -273,9 +294,31 @@ const FortuneInterpret = ({
         imageUrl={capturedImage}
         onRetake={handleRetake}
         isFromFortune={true}
+        lang={lang} // 傳遞語言參數
       />
     );
   }
+
+  if (!isContentReady) {
+    return <LoadingOverlay>{t("fortuneTelling.loadingInterpretation")}</LoadingOverlay>;
+  }
+
+  // 顯示錯誤資訊
+  const ErrorMessage = () => {
+    if (!error) return null;
+    return (
+      <div style={{ 
+        color: 'red', 
+        backgroundColor: '#fee', 
+        padding: '10px', 
+        margin: '10px 0', 
+        borderRadius: '5px',
+        textAlign: 'center'
+      }}>
+        {t("common.error")}: {error}
+      </div>
+    );
+  };
 
   const getIconForBlock = (blockIndex) => {
     return `/fortune_${blockIndex}.png`;
@@ -283,20 +326,22 @@ const FortuneInterpret = ({
 
   return (
     <Container>
+      <ErrorMessage />
+      
       <ImageContainer>
         {capturedImage ? (
           <div className="image-wrapper">
-            <img src={capturedImage} alt="captured" />
+            <img src={capturedImage} alt={t("fortuneTelling.capturedImage")} />
             {isAnalyzing && (
               <div className="analysis-overlay">
-                分析中...
+                {t("fortuneTelling.analyzing")}
               </div>
             )}
           </div>
         ) : (
           <img 
             src={`/jenn-ai/${String(fortuneNumber).padStart(2, '0')}.png`} 
-            alt={`第${fortuneNumber}籤`}
+            alt={t("fortuneTelling.fortuneImage", { number: fortuneNumber })}
           />
         )}
       </ImageContainer>
@@ -305,9 +350,9 @@ const FortuneInterpret = ({
         <AnalysisBlock>
           <IconImage src={getIconForBlock(1)} />
           <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">{name} 的{categoryText}解籤</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+            <span className="title-text">{name} {t("fortuneTelling.fortuneInterpretation", { category: categoryText[category] })}</span>
+            <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
           </BlockTitle>
           <ContentItem>
             <ItemContent>{interpretation?.analysis || ''}</ItemContent>
@@ -317,9 +362,9 @@ const FortuneInterpret = ({
         <AnalysisBlock>
           <IconImage src={getIconForBlock(2)} />
           <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">建議</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+            <span className="title-text">{t("fortuneTelling.suggestion")}</span>
+            <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
           </BlockTitle>
           <ContentItem>
             <ItemContent>{interpretation?.advice || ''}</ItemContent>
@@ -329,9 +374,9 @@ const FortuneInterpret = ({
         <AnalysisBlock>
           <IconImage src={getIconForBlock(3)} />
           <BlockTitle>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-            <span className="title-text">AWS 小提醒</span>
-            <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+            <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+            <span className="title-text">{t("fortuneTelling.awsReminder")}</span>
+            <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
           </BlockTitle>
           <ContentItem>
             <ItemContent>{interpretation?.aws_reminder || ''}</ItemContent>
@@ -344,7 +389,7 @@ const FortuneInterpret = ({
           onClick={handleDownload} 
           disabled={isUploading}
         >
-          {isUploading ? "處理中..." : "下載解籤結果"}
+          {isUploading ? t("common.processing") : t("fortuneTelling.downloadResult")}
         </ActionButton>
 
         <ActionButton 
@@ -352,7 +397,7 @@ const FortuneInterpret = ({
           disabled={isAnalyzing}
         >
           <CameraIcon size={24} />
-          結合面相獲取建議
+          {t("fortuneTelling.combineWithFace")}
         </ActionButton>
 
         <ActionButton 
@@ -363,7 +408,7 @@ const FortuneInterpret = ({
             border: '2px solid #C84B31' 
           }}
         >
-          重新抽籤
+          {t("fortuneTelling.retryFortune")}
         </ActionButton>
       </ButtonContainer>
 
@@ -374,10 +419,13 @@ const FortuneInterpret = ({
         />
       )}
 
+      {isAnalyzing && <LoadingOverlay>{t("fortuneTelling.analyzing")}</LoadingOverlay>}
+
       <QRCodeModal
         url={downloadUrl}
         isOpen={showQRCode}
         onClose={() => setShowQRCode(false)}
+        lang={lang}
       />
     </Container>
   );

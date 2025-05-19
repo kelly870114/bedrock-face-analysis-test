@@ -1,7 +1,6 @@
 import styled, { createGlobalStyle } from 'styled-components';
 import { keyframes } from 'styled-components';
 
-
 const MAIN_COLOR = '#C84B31';
 
 const fadeInOut = keyframes`
@@ -9,7 +8,6 @@ const fadeInOut = keyframes`
   50% { opacity: 1; }
   100% { opacity: 0.7; }
 `;
-
 
 export const Container = styled.div`
   min-height: 100vh;
@@ -87,7 +85,7 @@ export const ImageContainer = styled.div`
   width: 90vw;
   max-width: min(500px, 90%);
   position: relative;
-  margin: auto;
+  margin: 50px auto auto auto;
   border-radius: 8px;
   overflow: hidden;
   flex: 1;
@@ -107,7 +105,6 @@ export const ImageContainer = styled.div`
   }
 `;
 
-
 export const ImageOverlay = styled.div`
   position: absolute;
   top: 0;
@@ -125,15 +122,17 @@ export const ImageOverlay = styled.div`
   animation: ${fadeInOut} 2s infinite ease-in-out;
 `;
 
-// 最外層容器
+// 最外層容器 - 與 fortune 風格一致
 export const PageWrapper = styled.div`
   min-height: 100vh;
+  height: 100%;
   background-color: #FDF6E9;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 `;
 
-// 背景和邊框
+// 背景和邊框 - 與 fortune 風格一致
 export const ChineseContainer = styled.div`
   flex: 1;
   display: flex;
@@ -170,7 +169,7 @@ export const ChineseContainer = styled.div`
   }
 `;
 
-// 左右邊框
+// 左右邊框 - 與 fortune 風格一致
 export const BorderContainer = styled.div`
   position: absolute;
   top: 0;
@@ -208,15 +207,20 @@ export const ContentWrapper = styled.div`
   position: relative;
   z-index: 1;
   box-sizing: border-box;
+  overflow-y: auto;  /* 添加捲動功能 */
+  height: 100%; 
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
 `;
 
-// 圓角
+// 圓角 - 與 fortune 風格一致
 export const Corner = styled.div`
   position: absolute;
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background-color: ${MAIN_COLOR};
+  z-index: 2;
 
   &.top-left {
     top: 10px;
@@ -267,7 +271,6 @@ export const TitleContainer = styled.div`
     }
   }
 `;
-
 
 // 首頁中間圖片，跟隨標題寬度
 export const LogoContainer = styled.div`

@@ -1,0 +1,95 @@
+export default {
+    // 通用文本
+    common: {
+      loading: "加载中...",
+      error: "发生错误",
+      retry: "重试",
+      submit: "提交",
+      cancel: "取消",
+      back: "返回",
+      close: "关闭",
+      save: "保存",
+      copyright: "© 2024 Amazon Web Services Solutions Architect. All rights reserved.",
+    },
+  
+    // 桌面视图
+    desktop: {
+      title: "🔮 体验 Amazon Bedrock 🔮",
+      description: "请输入活动代码，选择想要体验的服务",
+      eventCodePlaceholder: "请输入活动代码",
+      loading: "加载中...",
+      faceAnalysis: "🌝 面相大师",
+      fortuneTelling: "🎋 解签大师",
+      qrCodeDescription: "请使用手机扫描下方 QR Code 开始分析",
+      invalidEventCode: "无效的活动代码",
+      eventNotAvailable: "活动未开放",
+      systemError: "系统发生错误，请稍后再试",
+      instructions: {
+        scanQRCode: "请使用手机相机扫描 QR Code",
+        enterFaceAnalysis: "扫描后会进入面相大师分析您的面相及运势",
+        bedrockAnalysis: "拍摄完成后，会由Amazon Bedrock进行分析",
+      },
+    },
+  
+    // 面相分析
+    faceAnalysis: {
+      title: "面相大师",
+      startAnalysis: "开始分析",
+      analyzing: "分析中...",
+      retakePhoto: "重新拍照",
+      downloadResult: "下载分析结果",
+      processing: "处理中...",
+      scanToDownload: "扫描 QR Code 下载分析结果",
+      downloadExpiration: "请在 10 分钟内完成下载",
+      stages: {
+        faceShape: "脸型比例分析",
+        features: "五官特征分析",
+        overall: "运势整体评析",
+      },
+      status: {
+        pending: "等待中",
+        processing: "分析中...",
+        completed: "✓ 完成",
+        failed: "× 失败",
+      },
+      faceShapeAnalysis: "脸型比例分析",
+      featureAnalysis: "五官特征分析",
+      overallAnalysis: "运势发展评析",
+      summary: "整体评析",
+    },
+  
+    // 解签分析
+    fortuneTelling: {
+      title: "解签大师",
+      enterName: "请输入姓名",
+      category: {
+        love: "爱情",
+        career: "事业",
+        wealth: "财运",
+        family: "家庭",
+        study: "学业",
+        travel: "旅游",
+      },
+      startFortuneTelling: "开始抽签",
+      hasFortuneNumber: "已有签号",
+      chooseFortuneNumber: "选择签号",
+      fortuneNumberPlaceholder: "1-24",
+      confirm: "确定",
+      noNameError: "请输入姓名",
+      noCategoryError: "请选择一个类别",
+      interpreting: "解签中...",
+      startInterpreting: "开始解签",
+      retryFortune: "重新抽签",
+      downloadResult: "下载解签结果",
+      fortuneInterpretation: "的解签",
+      suggestion: "建议",
+      awsReminder: "AWS 小提醒",
+      combineWithFace: "结合面相获取建议",
+      nameAnalysis: "结合姓名学分析",
+      personalFortune: "的专属签诗",
+      generatingPoem: "签诗生成中...",
+      printFortune: "打印签诗",
+      printDevMode: "打印开发者模式",
+      printing: "打印中..."
+    },
+  };

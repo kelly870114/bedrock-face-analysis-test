@@ -1,49 +1,34 @@
-import AWS from 'aws-sdk';
-import mqtt from 'mqtt';
+import { Auth } from 'aws-amplify';
+import { AWSIoTProvider } from '@aws-amplify/pubsub';
+import { PubSub } from '@aws-amplify/pubsub';
 import { config } from '../../config';
 
-// 初始化 AWS 認證
-const initializeCredentials = async () => {
-  AWS.config.region = 'us-east-1';
-  
-  // 設置 Cognito 認證
-  AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    IdentityPoolId: config.cognitoIdentityPoolId,
-  });
-  
-  // 刷新認證
-  try {
-    await AWS.config.credentials.getPromise();
-    return AWS.config.credentials;
-  } catch (error) {
-    console.error('獲取 AWS 認證失敗:', error);
-    throw error;
-  }
-};
+// 初始化 PubSub 配置
+let isConfigured = false;
 
-// 創建簽名 URL
-const getSignedUrl = async () => {
+const configurePubSub = async () => {
+  if (isConfigured) return;
+  
   try {
-    const credentials = await initializeCredentials();
-    
-    // 創建 IoT 客戶端
-    const iotClient = new AWS.IotData({
-      endpoint: `https://${config.iotEndpoint}`,
-      credentials: AWS.config.credentials,
+    // 添加 IoT Provider
+    Auth.configure({
+      identityPoolId: config.cognitoIdentityPoolId,
+      region: 'us-east-1'
     });
     
-    // 獲取簽名 URL
-    return new Promise((resolve, reject) => {
-      const params = {
-        protocol: 'wss',
-        host: config.iotEndpoint,
-      };
-      
-      const url = iotClient.getSignedUrl('Connect', params);
-      resolve(url);
+    // 配置 IoT Provider
+    const iotProvider = new AWSIoTProvider({
+      aws_pubsub_region: 'us-east-1',
+      aws_pubsub_endpoint: `wss://${config.iotEndpoint}/mqtt`,
     });
+    
+    // 添加 provider 到 PubSub
+    PubSub.addPluggable(iotProvider);
+    
+    isConfigured = true;
+    console.log('PubSub 已配置完成');
   } catch (error) {
-    console.error('獲取簽名 URL 失敗:', error);
+    console.error('配置 PubSub 失敗:', error);
     throw error;
   }
 };
@@ -51,99 +36,90 @@ const getSignedUrl = async () => {
 // 連接 IoT 並訂閱主題
 export const connectIoT = async (sessionId, handlers) => {
   try {
-    // 獲取簽名的 WebSocket URL
-    const signedUrl = await getSignedUrl();
+    if (!sessionId) {
+      throw new Error('缺少必要的 session_id 參數');
+    }
     
-    // 創建 MQTT 客戶端
-    const client = mqtt.connect(signedUrl);
+    console.log(`正在設置IoT連接，session_id: ${sessionId}`);
     
-    return new Promise((resolve, reject) => {
-      client.on('connect', () => {
-        console.log('已連接到 AWS IoT');
-        
-        // 訂閱狀態主題
-        client.subscribe(`face-analysis/${sessionId}/status`, (err) => {
-          if (err) {
-            console.error('訂閱狀態主題失敗:', err);
-          } else {
-            console.log(`已訂閱狀態主題 face-analysis/${sessionId}/status`);
-          }
-        });
-        
-        // 訂閱各階段結果主題
-        const stages = ['faceShape', 'features', 'overall'];
-        stages.forEach(stage => {
-          client.subscribe(`face-analysis/${sessionId}/result/${stage}`, (err) => {
-            if (err) {
-              console.error(`訂閱 ${stage} 結果主題失敗:`, err);
-            } else {
-              console.log(`已訂閱結果主題 face-analysis/${sessionId}/result/${stage}`);
-            }
-          });
-        });
-        
-        // 訂閱錯誤主題
-        client.subscribe(`face-analysis/${sessionId}/error`, (err) => {
-          if (err) {
-            console.error('訂閱錯誤主題失敗:', err);
-          } else {
-            console.log(`已訂閱錯誤主題 face-analysis/${sessionId}/error`);
-          }
-        });
-        
-        // 訂閱完成主題
-        client.subscribe(`face-analysis/${sessionId}/completed`, (err) => {
-          if (err) {
-            console.error('訂閱完成主題失敗:', err);
-          } else {
-            console.log(`已訂閱完成主題 face-analysis/${sessionId}/completed`);
-          }
-        });
-        
-        // 設置消息處理
-        client.on('message', (topic, message) => {
-          try {
-            const data = JSON.parse(message.toString());
-            console.log(`收到主題 ${topic} 的消息:`, data);
-            
-            if (topic === `face-analysis/${sessionId}/status`) {
-              handlers.onStatus && handlers.onStatus(data);
-            } else if (topic.includes('/result/')) {
-              const stage = topic.split('/').pop();
-              handlers.onStageResult && handlers.onStageResult(stage, data);
-            } else if (topic === `face-analysis/${sessionId}/error`) {
-              handlers.onError && handlers.onError(data);
-            } else if (topic === `face-analysis/${sessionId}/completed`) {
-              handlers.onComplete && handlers.onComplete(data);
-            }
-          } catch (error) {
-            console.error('處理收到的消息時出錯:', error);
-          }
-        });
-        
-        client.on('error', (err) => {
-          console.error('MQTT 客戶端錯誤:', err);
-          handlers.onConnectionError && handlers.onConnectionError(err);
-        });
-        
-        // 返回客戶端和斷開連接的方法
-        resolve({
-          disconnect: () => {
-            try {
-              client.end();
-              console.log('已斷開 IoT 連接');
-            } catch (e) {
-              console.warn('斷開連接時出錯:', e);
-            }
-          }
-        });
-      });
-      
-      client.on('error', (err) => {
-        console.error('連接到 IoT 失敗:', err);
-        reject(err);
-      });
+    // 確保 PubSub 已配置
+    await configurePubSub();
+    
+    // 訂閱主題
+    const statusTopic = `face-analysis/${sessionId}/status`;
+    const errorTopic = `face-analysis/${sessionId}/error`;
+    const completedTopic = `face-analysis/${sessionId}/completed`;
+    
+    console.log(`準備訂閱主題: face-analysis/${sessionId}/+`);
+    
+    // 訂閱狀態主題
+    const statusSubscription = PubSub.subscribe(statusTopic).subscribe({
+      next: data => {
+        console.log(`收到狀態更新:`, data.value);
+        handlers.onStatus && handlers.onStatus(data.value);
+      },
+      error: error => {
+        console.error(`狀態主題訂閱錯誤:`, error);
+        handlers.onConnectionError && handlers.onConnectionError(error);
+      }
     });
+    
+    // 訂閱階段結果主題
+    const stageSubscriptions = [];
+    const stages = ['faceShape', 'features', 'overall'];
+    
+    stages.forEach(stage => {
+      const topic = `face-analysis/${sessionId}/result/${stage}`;
+      const subscription = PubSub.subscribe(topic).subscribe({
+        next: data => {
+          console.log(`收到 ${stage} 階段結果:`, data.value);
+          handlers.onStageResult && handlers.onStageResult(stage, data.value);
+        },
+        error: error => {
+          console.error(`${stage} 結果主題訂閱錯誤:`, error);
+        }
+      });
+      stageSubscriptions.push(subscription);
+    });
+    
+    // 訂閱錯誤主題
+    const errorSubscription = PubSub.subscribe(errorTopic).subscribe({
+      next: data => {
+        console.error(`收到錯誤:`, data.value);
+        handlers.onError && handlers.onError(data.value);
+      },
+      error: error => {
+        console.error(`錯誤主題訂閱錯誤:`, error);
+      }
+    });
+    
+    // 訂閱完成主題
+    const completedSubscription = PubSub.subscribe(completedTopic).subscribe({
+      next: data => {
+        console.log(`收到完成通知:`, data.value);
+        handlers.onComplete && handlers.onComplete(data.value);
+      },
+      error: error => {
+        console.error(`完成主題訂閱錯誤:`, error);
+      }
+    });
+    
+    console.log('成功訂閱所有主題');
+    
+    // 返回客戶端和斷開連接的方法
+    return {
+      disconnect: () => {
+        try {
+          statusSubscription.unsubscribe();
+          errorSubscription.unsubscribe();
+          completedSubscription.unsubscribe();
+          stageSubscriptions.forEach(sub => sub.unsubscribe());
+          console.log('已斷開所有IoT訂閱');
+        } catch (e) {
+          console.warn('斷開訂閱時出錯:', e);
+        }
+      }
+    };
   } catch (error) {
     console.error('IoT 服務初始化失敗:', error);
     throw error;

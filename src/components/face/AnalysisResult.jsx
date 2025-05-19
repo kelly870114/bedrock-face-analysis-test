@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import html2canvas from "html2canvas";
 import { X } from "lucide-react";
 import { config } from "../../config";
+import { useTranslation, translateError } from "../../i18n";
 import {
   Container,
   ImageContainer,
@@ -25,6 +26,7 @@ import {
 
 // QR Code Modal 組件
 const QRCodeModal = ({ url, isOpen, onClose }) => {
+  const { t } = useTranslation();
   if (!isOpen) return null;
 
   return (
@@ -33,7 +35,7 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
         <ModalCloseButton onClick={onClose}>
           <X size={20} />
         </ModalCloseButton>
-        <ModalTitle>掃描 QR Code 下載分析結果</ModalTitle>
+        <ModalTitle>{t("faceAnalysis.scanToDownload")}</ModalTitle>
         <QRCodeContainer>
           <svg
             width="100%"
@@ -49,7 +51,7 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
             }}
           />
         </QRCodeContainer>
-        <ModalText>請在 10 分鐘內完成下載</ModalText>
+        <ModalText>{t("faceAnalysis.downloadExpiration")}</ModalText>
       </ModalContent>
     </ModalOverlay>
   );
@@ -61,6 +63,7 @@ const AnalysisResult = ({
   onRetake,
   isFromFortune = false,
 }) => {
+  const { t, language } = useTranslation();
   const [showQRCode, setShowQRCode] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -133,7 +136,7 @@ const AnalysisResult = ({
       });
 
       if (!urlResponse.ok) {
-        throw new Error("無法獲取上傳網址");
+        throw new Error(t("faceAnalysis.cannotGetUploadUrl"));
       }
 
       const { uploadUrl } = await urlResponse.json();
@@ -158,7 +161,7 @@ const AnalysisResult = ({
       });
 
       if (!uploadResponse.ok) {
-        throw new Error("圖片上傳失敗");
+        throw new Error(t("faceAnalysis.imageUploadFailed"));
       }
 
       // 設置下載 URL 並顯示 QR code
@@ -167,7 +170,7 @@ const AnalysisResult = ({
       setShowQRCode(true);
     } catch (error) {
       console.error("處理失敗:", error);
-      alert("圖片處理失敗，請稍後再試");
+      alert(translateError(error.message, language) || t("faceAnalysis.processingFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -177,7 +180,7 @@ const AnalysisResult = ({
     <Container>
       {imageUrl && (
         <ImageContainer>
-          <img src={imageUrl} alt="captured" />
+          <img src={imageUrl} alt={t("faceAnalysis.capturedImage")} />
         </ImageContainer>
       )}
       <ResultContainer ref={resultRef}>
@@ -185,9 +188,9 @@ const AnalysisResult = ({
           <AnalysisBlock>
             <IconImage src={getIconForBlock(1)} />
             <BlockTitle>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-              <span className="title-text">{result.faceShape.title}</span>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <span className="title-text">{result.faceShape.title || t("faceAnalysis.faceShapeAnalysis")}</span>
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
             </BlockTitle>
             {Object.entries(result.faceShape.content).map(([key, value]) => (
               <ContentItem key={key}>
@@ -202,9 +205,9 @@ const AnalysisResult = ({
           <AnalysisBlock>
             <IconImage src={getIconForBlock(2)} />
             <BlockTitle>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-              <span className="title-text">{result.features.title}</span>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <span className="title-text">{result.features.title || t("faceAnalysis.featureAnalysis")}</span>
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
             </BlockTitle>
             {Object.entries(result.features.content).map(([key, value]) => (
               <ContentItem key={key}>
@@ -219,9 +222,9 @@ const AnalysisResult = ({
           <AnalysisBlock>
             <IconImage src={getIconForBlock(3)} />
             <BlockTitle>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-              <span className="title-text">{result.overall.title}</span>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <span className="title-text">{result.overall.title || t("faceAnalysis.overallAnalysis")}</span>
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
             </BlockTitle>
             {Object.entries(result.overall.content).map(([key, value]) => (
               <ContentItem key={key}>
@@ -235,9 +238,9 @@ const AnalysisResult = ({
         {result.summary && (
           <Summary>
             <BlockTitle>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
-              <span className="title-text">整體評析</span>
-              <img src="/chinese_tie.png" alt="裝飾" className="title-icon" />
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <span className="title-text">{t("faceAnalysis.summary")}</span>
+              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
             </BlockTitle>
             <p>{result.summary}</p>
           </Summary>
@@ -245,16 +248,18 @@ const AnalysisResult = ({
       </ResultContainer>
 
       <DownloadButton onClick={handleDownload} disabled={isUploading}>
-        {isUploading ? "處理中..." : "下載分析結果"}
+        {isUploading ? t("common.processing") : t("faceAnalysis.downloadResult")}
       </DownloadButton>
       {isFromFortune ? (
         <RetakeButton
           onClick={() => (window.location.href = `/fortune/mobile?event=${eventId}`)}
         >
-          重新抽籤
+          {t("fortuneTelling.retryFortune")}
         </RetakeButton>
       ) : (
-        <RetakeButton onClick={onRetake}>重新拍照</RetakeButton>
+        <RetakeButton onClick={onRetake}>
+          {t("faceAnalysis.retakePhoto")}
+        </RetakeButton>
       )}
 
       <QRCodeModal
