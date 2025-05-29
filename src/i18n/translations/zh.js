@@ -9,6 +9,8 @@ export default {
     back: "返回",
     close: "關閉",
     save: "儲存",
+    processing: "處理中...", // 新增
+    decoration: "裝飾", // 新增
     copyright:
       "© 2024 Amazon Web Services Solutions Architect. All rights reserved.",
   },
@@ -42,16 +44,39 @@ export default {
     processing: "處理中...",
     scanToDownload: "掃描 QR Code 下載分析結果",
     downloadExpiration: "請在 10 分鐘內完成下載",
-    stages: {
-      faceShape: "臉型比例分析",
-      features: "五官特徵分析",
-      overall: "運勢整體分析",
+    capturedImage: "拍攝的照片", // 新增
+    waiting: "等待中", // 新增
+    preparing: "準備中...", // 新增
+    analyzingFaceShape: "臉型比例分析中...", // 新增
+    faceShapeCompleted: "臉型分析完成！正在分析五官...", // 新增
+    featuresCompleted: "五官分析完成！正在進行綜合分析...", // 新增
+    analysisCompleted: "分析完成！", // 新增
+    waitingToStart: "等待開始", // 新增
+    connectionFailed: "連接失敗", // 新增
+    connectionLost: "連接中斷", // 新增
+    analysisError: "分析出現錯誤", // 新增
+    analysisFailed: "分析失敗", // 新增
+    missingSessionId: "缺少會話ID", // 新增
+    cannotGetUploadUrl: "無法獲取上傳網址", // 新增
+    imageUploadFailed: "圖片上傳失敗", // 新增
+    processingFailed: "圖片處理失敗，請稍後再試", // 新增
+    faceShapeStages: {
+      pending: "臉型比例分析等待中",
+      processing: "臉型比例分析中...",
+      completed: "臉型比例分析完成",
+      failed: "臉型比例分析失敗",
     },
-    status: {
-      pending: "等待中",
-      processing: "分析中...",
-      completed: "✓ 完成",
-      failed: "× 失敗",
+    featureAnalysisStages: {
+      pending: "五官特徵分析等待中",
+      processing: "五官特徵分析中...",
+      completed: "五官特徵分析完成",
+      failed: "五官特徵分析失敗",
+    },
+    overallAnalysisStages: {
+      pending: "運勢整體分析等待中",
+      processing: "運勢整體分析中...",
+      completed: "運勢整體分析完成",
+      failed: "運勢整體分析失敗",
     },
     faceShapeAnalysis: "臉型比例分析",
     featureAnalysis: "五官特徵分析",

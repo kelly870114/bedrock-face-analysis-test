@@ -1,5 +1,4 @@
-import styled, { createGlobalStyle } from 'styled-components';
-import { keyframes } from 'styled-components';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
 
 const MAIN_COLOR = '#C84B31';
 
@@ -9,11 +8,37 @@ const fadeInOut = keyframes`
   100% { opacity: 0.7; }
 `;
 
+// 第一階段 - 圓形旋轉動畫
+const rotateCircle = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+// 第三階段 - 金色光芒效果
+const goldenGlow = keyframes`
+  0% { 
+    filter: drop-shadow(0 0 5px #FFD700) drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 15px #FFD700);
+    opacity: 0.8;
+  }
+  50% { 
+    filter: drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 20px #FFD700) drop-shadow(0 0 30px #FFD700);
+    opacity: 1;
+  }
+  100% { 
+    filter: drop-shadow(0 0 5px #FFD700) drop-shadow(0 0 10px #FFD700) drop-shadow(0 0 15px #FFD700);
+    opacity: 0.8;
+  }
+`;
+
 export const Container = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  position: relative; // 添加相對定位
+  position: relative;
 `;
 
 export const Content = styled.div`
@@ -23,11 +48,10 @@ export const Content = styled.div`
   align-items: center;
   padding: 20px;
   gap: 24px;
-  position: center; // 添加相對定位
-  z-index: 1; // 確保內容在背景之上
+  position: center;
+  z-index: 1;
 `;
 
-// Message box
 export const MessageBox = styled.div`
   background-color: white;
   border-radius: 12px;
@@ -51,7 +75,6 @@ export const MessageBox = styled.div`
   }
 `;
 
-// 開始分析按鈕
 export const CameraButton = styled.button`
   display: flex;
   align-items: center;
@@ -69,7 +92,7 @@ export const CameraButton = styled.button`
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
   width: 200px;
-  margin: 0 auto 40px;  /* 只保留底部邊距 */
+  margin: 0 auto 40px;
   
   &:hover {
     transform: translateY(-2px);
@@ -85,7 +108,7 @@ export const ImageContainer = styled.div`
   width: 90vw;
   max-width: min(500px, 90%);
   position: relative;
-  margin: 50px auto auto auto;
+  margin: auto;
   border-radius: 8px;
   overflow: hidden;
   flex: 1;
@@ -122,17 +145,13 @@ export const ImageOverlay = styled.div`
   animation: ${fadeInOut} 2s infinite ease-in-out;
 `;
 
-// 最外層容器 - 與 fortune 風格一致
 export const PageWrapper = styled.div`
   min-height: 100vh;
-  height: 100%;
   background-color: #FDF6E9;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 `;
 
-// 背景和邊框 - 與 fortune 風格一致
 export const ChineseContainer = styled.div`
   flex: 1;
   display: flex;
@@ -146,7 +165,6 @@ export const ChineseContainer = styled.div`
     margin: 0 auto;
   `}
 
-  /* 上邊框 */
   &::before {
     content: '';
     position: absolute;
@@ -157,7 +175,6 @@ export const ChineseContainer = styled.div`
     background-color: ${MAIN_COLOR};
   }
 
-  /* 下邊框 */
   &::after {
     content: '';
     position: absolute;
@@ -169,7 +186,6 @@ export const ChineseContainer = styled.div`
   }
 `;
 
-// 左右邊框 - 與 fortune 風格一致
 export const BorderContainer = styled.div`
   position: absolute;
   top: 0;
@@ -177,7 +193,6 @@ export const BorderContainer = styled.div`
   right: 0;
   bottom: 0;
 
-  /* 左邊框 */
   &::before {
     content: '';
     position: absolute;
@@ -188,7 +203,6 @@ export const BorderContainer = styled.div`
     background-color: ${MAIN_COLOR};
   }
 
-  /* 右邊框 */
   &::after {
     content: '';
     position: absolute;
@@ -207,20 +221,14 @@ export const ContentWrapper = styled.div`
   position: relative;
   z-index: 1;
   box-sizing: border-box;
-  overflow-y: auto;  /* 添加捲動功能 */
-  height: 100%; 
-  padding: 20px;
-  -webkit-overflow-scrolling: touch;
 `;
 
-// 圓角 - 與 fortune 風格一致
 export const Corner = styled.div`
   position: absolute;
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background-color: ${MAIN_COLOR};
-  z-index: 2;
 
   &.top-left {
     top: 10px;
@@ -243,7 +251,6 @@ export const Corner = styled.div`
   }
 `;
 
-// 標題容器
 export const TitleContainer = styled.div`
   width: 90vw;
   max-width: min(500px, 90%);
@@ -272,7 +279,6 @@ export const TitleContainer = styled.div`
   }
 `;
 
-// 首頁中間圖片，跟隨標題寬度
 export const LogoContainer = styled.div`
   position: relative;
   width: 90vw;
@@ -306,7 +312,6 @@ export const LogoContainer = styled.div`
   }
 `;
 
-// v2.0
 export const AnalysisBlock = styled.div`
   background: #fff0d9;
   padding: 2rem 1rem 1rem;
@@ -421,48 +426,141 @@ export const IconImage = styled.div`
   z-index: 3;
 `;
 
-// 進度指示器容器
+// 進度容器樣式 - 橫向排列
 export const ProgressContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
   width: 90%;
   max-width: 450px;
-  margin: 20px auto;
+  margin: 40px auto;
+  padding: 20px 10px;
 `;
 
-// 進度項目
-export const ProgressItem = styled.div`
+// 進度階段樣式
+export const ProgressStage = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background-color: #fff0d9;
-  border: 2px solid ${({ status }) => 
-    status === 'completed' ? '#4CAF50' : 
-    status === 'processing' ? MAIN_COLOR : 
-    status === 'failed' ? '#F44336' : '#E0E0E0'
-  };
-  
-  .stage-name {
-    font-weight: 500;
-    font-family: "Noto Serif TC", serif;
-    font-size: 16px;
-  }
-  
-  .stage-status {
-    font-family: "Noto Serif TC", serif;
-    font-weight: 500;
-    color: ${({ status }) => 
-      status === 'completed' ? '#4CAF50' : 
-      status === 'processing' ? MAIN_COLOR : 
-      status === 'failed' ? '#F44336' : '#757575'
-    };
+  gap: 15px;
+  flex: 1;
+  position: relative;
+
+  // 虛線連接線（除了最後一個）
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 40px; // 調整到圖示中心位置
+    right: -20px;
+    width: 20px;
+    height: 2px;
+    background-image: linear-gradient(to right, ${props => props.isActive ? MAIN_COLOR : '#E0E0E0'} 40%, transparent 40%);
+    background-size: 8px 2px;
+    background-repeat: repeat-x;
+    z-index: 0;
   }
 `;
 
-// 錯誤訊息
+// 第一階段 - 臉型分析圖示容器
+export const FaceShapeContainer = styled.div`
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+// 第一階段 - 旋轉的圓形邊框（完整圓圈，只有小縫隙）
+export const RotatingCircle = styled.div`
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 3px solid ${props => props.isActive ? MAIN_COLOR : '#E0E0E0'};
+  border-radius: 50%;
+  border-top-color: transparent;
+  border-top-width: 6px; // 讓縫隙更明顯一點
+  animation: ${props => props.isProcessing ? rotateCircle : 'none'} 2s linear infinite;
+`;
+
+// 第一階段 - 中心圖示
+export const FaceIcon = styled.img`
+  width: 50px;
+  height: 50px;
+  z-index: 1;
+  filter: ${props => props.isActive ? 'none' : 'grayscale(100%)'};
+  opacity: ${props => props.isActive ? 1 : 0.5};
+`;
+
+// 第二階段 - 輪播圖示容器（確保沒有圓圈樣式）
+export const FeatureContainer = styled.div`
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  /* 確保沒有 border 或其他圓圈樣式 */
+`;
+
+// 第二階段 - 輪播圖示（保持原始比例，不壓縮）
+export const FeatureIcon = styled.img`
+  max-width: 80px;  /* 增加最大寬度 */
+  max-height: 80px; /* 增加最大高度 */
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transition: opacity 0.3s ease;
+  filter: ${props => props.isActive ? 'none' : 'grayscale(100%)'};
+  opacity: ${props => props.isActive ? 1 : 0.5};
+  /* 確保圖片不會被額外的樣式影響 */
+  border: none;
+  border-radius: 0;
+  background: none;
+`;
+
+// 第三階段 - 運勢圖示容器
+export const OverallContainer = styled.div`
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+// 第三階段 - 閃光圖示（保持原始比例，不壓縮）
+export const OverallIcon = styled.img`
+  max-width: 80px;  /* 增加最大寬度 */
+  max-height: 80px; /* 增加最大高度 */
+  width: auto;      
+  height: auto;
+  object-fit: contain;
+  animation: ${props => props.isProcessing ? goldenGlow : 'none'} 2s ease-in-out infinite;
+  filter: ${props => props.isActive ? 'none' : 'grayscale(100%)'};
+  opacity: ${props => props.isActive ? 1 : 0.5};
+  /* 確保圖片不會被額外的樣式影響 */
+  border: none;
+  border-radius: 0;
+  background: none;
+`;
+
+// 進度文字
+export const ProgressText = styled.div`
+  font-family: "Noto Serif TC", serif;
+  font-size: 14px;
+  color: ${props => 
+    props.completed ? '#4CAF50' : 
+    props.isActive ? MAIN_COLOR : 
+    '#999999'  // pending 狀態是灰色
+  };
+  font-weight: 500;
+  text-align: center;
+  max-width: 100px;
+  line-height: 1.2;
+`;
+
 export const ErrorMessage = styled.div`
   background-color: #FFEBEE;
   border: 2px solid #F44336;
@@ -481,7 +579,6 @@ export const ErrorMessage = styled.div`
   }
 `;
 
-// 重拍按鈕
 export const RetakeButton = styled.button`
   background-color: ${MAIN_COLOR};
   color: white;
