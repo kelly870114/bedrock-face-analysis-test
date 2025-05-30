@@ -108,7 +108,7 @@ export const ImageContainer = styled.div`
   width: 90vw;
   max-width: min(500px, 90%);
   position: relative;
-  margin: auto;
+  margin: 40px auto; /* 修改：增加 top margin 避免擋到邊框 */
   border-radius: 8px;
   overflow: hidden;
   flex: 1;
@@ -312,121 +312,7 @@ export const LogoContainer = styled.div`
   }
 `;
 
-export const AnalysisBlock = styled.div`
-  background: #fff0d9;
-  padding: 2rem 1rem 1rem;
-  margin-bottom: 2.5rem;
-  margin-top: 2rem;
-  width: 90%;
-  max-width: 450px;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
-  border: 2px solid ${MAIN_COLOR};
-  border-radius: 12px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-export const BlockTitle = styled.div`
-  position: relative;
-  margin: 0 auto 20px;
-  background: #fff7e6;
-  padding: 5px 20px;
-  border: 2px solid ${MAIN_COLOR};
-  border-radius: 20px;
-  color: #000000;
-  font-size: 18px;
-  font-weight: 500;
-  font-family: "Noto Serif TC", serif;
-  width: fit-content;
-  min-width: min(200px, 90%);
-  max-width: 90%;
-  box-sizing: border-box;
-  position: relative;
-
-  .title-icon {
-    width: 18px;
-    height: 18px;
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-
-    &:first-child {
-      left: 12px;
-    }
-
-    &:last-child {
-      right: 12px;
-    }
-  }
-
-  .title-text {
-    display: block;
-    text-align: center;
-    padding: 0 30px;
-    word-wrap: break-word;
-    hyphens: auto;
-  }
-`;
-
-export const ContentItem = styled.div`
-  margin-bottom: 12px;
-  text-align: center;
-  width: 100%;
-`;
-
-export const ItemTitle = styled.h4`
-  color: #000000;
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  text-align: center;
-  font-family: "Noto Serif TC", serif;
-`;
-
-export const ItemContent = styled.p`
-  color: #414141;
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0;
-  text-align: center;
-  font-family: "Noto Serif TC", serif;
-`;
-
-export const Summary = styled.div`
-  width: 90%;
-  max-width: 450px;
-  margin: 0 auto 30px;
-  border-radius: 12px;
-  padding: 20px;
-  font-family: "Noto Serif TC", serif;
-  
-  p {
-    color: #414141;
-    line-height: 1.8;
-    margin: 0;
-    font-size: 15px;
-  }
-`;
-
-export const IconImage = styled.div`
-  width: 50px;
-  height: 50px;
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 50%;
-  background-image: url(${(props) => props.src});
-  background-size: cover;
-  background-position: center;
-  z-index: 3;
-`;
-
-// 進度容器樣式 - 橫向排列
+// ===== 進度指示器相關樣式 =====
 export const ProgressContainer = styled.div`
   display: flex;
   flex-direction: row;
@@ -576,20 +462,5 @@ export const ErrorMessage = styled.div`
     margin-bottom: 16px;
     font-family: "Noto Serif TC", serif;
     font-size: 16px;
-  }
-`;
-
-export const RetakeButton = styled.button`
-  background-color: ${MAIN_COLOR};
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-family: "Noto Serif TC", serif;
-  font-size: 16px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #B85C38;
   }
 `;

@@ -20,8 +20,12 @@ import {
   CameraButton,
   ImageContainer,
   ImageOverlay,
-  RetakeButton,
   ErrorMessage,
+} from "./styles-mobile";
+
+// 從 AnalysisResult 導入下載相關樣式和共用組件
+import {
+  RetakeButton,
   AnalysisBlock,
   IconImage,
   BlockTitle,
@@ -29,10 +33,6 @@ import {
   ItemTitle,
   ItemContent,
   Summary,
-} from "./styles-mobile";
-
-// 從 AnalysisResult 導入下載相關樣式
-import {
   DownloadButton,
   ModalOverlay,
   ModalContent,
@@ -41,6 +41,7 @@ import {
   QRCodeContainer,
   ModalText,
 } from "./styles-result";
+
 
 import { X } from "lucide-react";
 import AnimatedProgressIndicator from "./AnimatedProgressIndicator"; // 新增的動畫進度組件
