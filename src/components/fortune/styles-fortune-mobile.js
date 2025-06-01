@@ -313,7 +313,7 @@ export const NumberInput = styled(Input)`
   }
 `;
 
-// 新增數字按鈕網格
+// 數字按鈕網格
 export const NumberButtonGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -323,7 +323,7 @@ export const NumberButtonGrid = styled.div`
   max-width: 300px;
 `;
 
-// 新增數字按鈕
+// 數字按鈕
 export const NumberButton = styled.button`
   display: flex;
   align-items: center;

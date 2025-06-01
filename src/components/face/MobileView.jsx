@@ -42,9 +42,8 @@ import {
   ModalText,
 } from "./styles-result";
 
-
 import { X } from "lucide-react";
-import AnimatedProgressIndicator from "./AnimatedProgressIndicator"; // 新增的動畫進度組件
+import AnimatedProgressIndicator from "./AnimatedProgressIndicator";
 
 // 導入IoT服務
 import { connectIoT } from "../utils/iotService";
@@ -101,13 +100,13 @@ const MobileView = () => {
   const [eventId, setEventId] = useState(null);
   const [analysisStatus, setAnalysisStatus] = useState("等待開始");
 
-  // 從 AnalysisResult 組件添加的狀態
+  // 下載相關狀態
   const [showQRCode, setShowQRCode] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const resultRef = useRef(null);
 
-  // 階段狀態
+  // 階段狀態 - 更精確的狀態追蹤
   const [stageStatus, setStageStatus] = useState({
     faceShape: { status: "pending", result: null },
     features: { status: "pending", result: null },
@@ -178,6 +177,55 @@ const MobileView = () => {
     };
   }, []);
 
+  // 狀態文字生成
+  const getSmartAnalysisStatus = () => {
+    const { faceShape, features, overall } = stageStatus;
+
+    // 如果還沒開始或初始化階段
+    if (faceShape.status === "pending" && features.status === "pending") {
+      return t("faceAnalysis.analyzing");
+    }
+
+    // 如果兩個階段都在處理中（並行）
+    if (faceShape.status === "processing" && features.status === "processing") {
+      return t("faceAnalysis.analyzingBothStages");
+    }
+
+    // 如果只有一個階段在處理
+    if (faceShape.status === "processing") {
+      return t("faceAnalysis.analyzingFaceShape");
+    }
+    if (features.status === "processing") {
+      return t("faceAnalysis.analyzingFeatures");
+    }
+
+    // 如果兩個階段都完成，第三階段在處理
+    if (faceShape.status === "completed" && features.status === "completed") {
+      if (overall.status === "processing") {
+        return t("faceAnalysis.analyzingOverall");
+      } else if (overall.status === "completed") {
+        return t("faceAnalysis.analysisCompleted");
+      } else {
+        return t("faceAnalysis.preparingOverall");
+      }
+    }
+
+    // 如果其中一個階段完成
+    const completedStages = [];
+    if (faceShape.status === "completed")
+      completedStages.push(t("faceAnalysis.faceShape"));
+    if (features.status === "completed")
+      completedStages.push(t("faceAnalysis.features"));
+
+    if (completedStages.length > 0) {
+      // 使用模板字符串替換，需要手動處理
+      const stagesText = completedStages.join(t("common.and")); 
+      return `${stagesText}${t("faceAnalysis.stageCompleted")}`;
+    }
+
+    return analysisStatus;
+  };
+
   // 設置 IoT 連接和訂閱
   const setupIoTConnection = async (newSessionId) => {
     try {
@@ -213,78 +261,77 @@ const MobileView = () => {
     setIsAnalyzing(false);
   };
 
-  // 處理狀態更新
+  // 處理狀態更新 - 更精確的狀態追蹤
   const handleStatusUpdate = (data) => {
     console.log("狀態更新:", data);
     const { stage, status } = data;
+
     if (stage && status) {
       setStageStatus((prev) => ({
         ...prev,
         [stage]: { ...prev[stage], status },
       }));
+
+      // 根據狀態更新顯示文字
+      if (status === "processing") {
+        if (stage === "faceShape") {
+          setAnalysisStatus(t("faceAnalysis.faceShapeStages.processing"));
+        } else if (stage === "features") {
+          setAnalysisStatus(t("faceAnalysis.featureAnalysisStages.processing"));
+        } else if (stage === "overall") {
+          setAnalysisStatus(t("faceAnalysis.overallAnalysisStages.processing"));
+        }
+      }
     }
   };
 
-  // 處理階段結果
+  // 處理階段結果 - 改進結果更新邏輯
   const handleStageResult = (stage, data) => {
     console.log(`接收到 ${stage} 階段結果:`, data);
-    if (stage === 'faceShape' && data.result) {
-      setFaceShapeResult(data.result);
-      setAnalysisStatus(t("faceAnalysis.faceShapeCompleted"));
-    } else if (stage === 'features' && data.result) {
-      setFeaturesResult(data.result);
-      setAnalysisStatus(t("faceAnalysis.featuresCompleted"));
-    } else if (stage === 'overall' && data.result) {
-      setOverallResult(data.result);
-      setSummary(data.summary || "");
-      setAnalysisStatus(t("faceAnalysis.analysisCompleted"));
-    }
 
-    if (data.result) {
+    if (stage === "faceShape" && data.result) {
+      setFaceShapeResult(data.result);
       setStageStatus((prev) => ({
         ...prev,
-        [stage]: {
-          ...prev[stage],
+        faceShape: {
+          ...prev.faceShape,
           status: "completed",
           result: data.result,
-          summary: data.summary || prev[stage].summary,
         },
       }));
-    }
-  };
-
-  // 處理錯誤
-  const handleIoTError = (data) => {
-    console.error("分析錯誤:", data);
-    const { stage, error: errorMsg } = data;
-    if (stage) {
+      setAnalysisStatus(t("faceAnalysis.faceShapeStages.completed"));
+    } else if (stage === "features" && data.result) {
+      setFeaturesResult(data.result);
       setStageStatus((prev) => ({
         ...prev,
-        [stage]: { ...prev[stage], status: "failed", error: errorMsg },
+        features: {
+          ...prev.features,
+          status: "completed",
+          result: data.result,
+        },
       }));
+      setAnalysisStatus(t("faceAnalysis.featureAnalysisStages.completed"));
+    } else if (stage === "overall" && data.result) {
+      setOverallResult(data.result);
+      setSummary(data.summary || "");
+      setStageStatus((prev) => ({
+        ...prev,
+        overall: {
+          ...prev.overall,
+          status: "completed",
+          result: data.result,
+          summary: data.summary,
+        },
+      }));
+      setAnalysisStatus(t("faceAnalysis.overallAnalysisStages.completed"));
     }
-    setError(
-      translateError(errorMsg, language) || t("faceAnalysis.analysisError")
-    );
+
+    checkIfAnalysisComplete();
   };
 
-  // 處理分析完成
-  const handleAnalysisComplete = (data) => {
-    console.log("分析完成:", data);
-
-    // 組合完整結果
-    const fullResult = {
-      faceShape: faceShapeResult,
-      features: featuresResult,
-      overall: overallResult,
-      summary: summary,
-    };
-
-    setAnalysisResult(fullResult);
-  };
-
-  // 更新分析結果
-  const updateAnalysisResult = () => {
+  // 檢查分析是否完成
+  const checkIfAnalysisComplete = () => {
+    // 使用最新的狀態檢查
     if (faceShapeResult && featuresResult && overallResult) {
       const completeResult = {
         faceShape: faceShapeResult,
@@ -294,7 +341,32 @@ const MobileView = () => {
       };
       setAnalysisResult(completeResult);
       setIsAnalyzing(false);
+      setAnalysisStatus(t("faceAnalysis.analysisCompleted"));
     }
+  };
+
+  // 處理錯誤
+  const handleIoTError = (data) => {
+    console.error("分析錯誤:", data);
+    const { stage, error: errorMsg } = data;
+
+    if (stage) {
+      setStageStatus((prev) => ({
+        ...prev,
+        [stage]: { ...prev[stage], status: "failed", error: errorMsg },
+      }));
+    }
+
+    setError(
+      translateError(errorMsg, language) || t("faceAnalysis.analysisError")
+    );
+    setIsAnalyzing(false);
+  };
+
+  // 處理分析完成
+  const handleAnalysisComplete = (data) => {
+    console.log("分析完成:", data);
+    checkIfAnalysisComplete();
   };
 
   // 處理照片拍攝
@@ -328,14 +400,14 @@ const MobileView = () => {
 
       const base64data = await base64Promise;
 
-      // 重置階段狀態
+      // 【修改】重置階段狀態 - 準備並行處理
       setStageStatus({
         faceShape: { status: "pending", result: null },
         features: { status: "pending", result: null },
         overall: { status: "pending", result: null, summary: null },
       });
 
-      // 發送到後端
+      // 發送到後端（保持原有的 API endpoint）
       console.log("發送分析請求...");
       const response = await fetch(`${config.apiEndpoint}/faceAnalysis`, {
         method: "POST",
@@ -359,7 +431,7 @@ const MobileView = () => {
       if (data.session_id) {
         const newSessionId = data.session_id;
         setSessionId(newSessionId);
-        setAnalysisStatus(t("faceAnalysis.analyzingFaceShape"));
+        setAnalysisStatus(t("faceAnalysis.analyzing"));
 
         // 設置 IoT 連接
         await setupIoTConnection(newSessionId);
@@ -414,26 +486,20 @@ const MobileView = () => {
     try {
       setIsUploading(true);
 
-      // 取得目標元素
       const element = resultRef.current;
-
-      // 獲取元素的實際尺寸
       const originalWidth = element.offsetWidth;
       const originalHeight = element.offsetHeight;
 
-      // 創建一個新的容器來保持原始佈局
       const container = document.createElement("div");
       container.style.width = `${originalWidth}px`;
       container.style.position = "absolute";
       container.style.left = "-9999px";
       container.style.top = "-9999px";
 
-      // 克隆目標元素到新容器
       const clone = element.cloneNode(true);
       container.appendChild(clone);
       document.body.appendChild(container);
 
-      // 設置 html2canvas 選項
       const canvas = await html2canvas(clone, {
         backgroundColor: "#FDF6E9",
         scale: 2,
@@ -452,15 +518,12 @@ const MobileView = () => {
         },
       });
 
-      // 清理臨時元素
       document.body.removeChild(container);
 
-      // 生成檔名
       const timestamp = new Date().getTime();
       const random = Math.floor(Math.random() * 1000);
       const filename = `analysis-${timestamp}-${random}.png`;
 
-      // 獲取上傳 URL
       const urlResponse = await fetch(`${config.apiEndpoint}/uploadImage`, {
         method: "POST",
         headers: {
@@ -477,7 +540,6 @@ const MobileView = () => {
 
       const { uploadUrl } = await urlResponse.json();
 
-      // 轉換 canvas 為二進制數據
       const base64Data = canvas.toDataURL("image/png").split(",")[1];
       const binaryData = atob(base64Data);
       const arrayBuffer = new ArrayBuffer(binaryData.length);
@@ -487,7 +549,6 @@ const MobileView = () => {
         uint8Array[i] = binaryData.charCodeAt(i);
       }
 
-      // 上傳圖片
       const uploadResponse = await fetch(uploadUrl, {
         method: "PUT",
         body: uint8Array,
@@ -500,7 +561,6 @@ const MobileView = () => {
         throw new Error(t("faceAnalysis.imageUploadFailed"));
       }
 
-      // 設置下載 URL 並顯示 QR code
       const downloadUrl = `${config.apiEndpoint}/uploadImage?filename=${filename}`;
       setDownloadUrl(downloadUrl);
       setShowQRCode(true);
@@ -632,7 +692,7 @@ const MobileView = () => {
     );
   };
 
-  // loading
+  // Loading
   if (isLoading) {
     return (
       <Container>
@@ -674,7 +734,7 @@ const MobileView = () => {
             currentPath="/face/mobile"
             queryParams={{ event: eventId }}
           />
-          
+
           {!isAnalyzing && !analysisResult && (
             <>
               <TitleContainer>
@@ -711,17 +771,17 @@ const MobileView = () => {
                     alt={t("faceAnalysis.capturedImage")}
                   />
                   {!stageStatus.overall.result && !error && (
-                    <ImageOverlay>{analysisStatus}</ImageOverlay>
+                    <ImageOverlay>{getSmartAnalysisStatus()}</ImageOverlay>
                   )}
                 </div>
               </ImageContainer>
 
-              {/* 使用新的動畫進度組件 */}
+              {/* 使用動畫進度組件 */}
               <AnimatedProgressIndicator
                 faceShapeResult={faceShapeResult}
                 featuresResult={featuresResult}
                 overallResult={overallResult}
-                analysisStatus={analysisStatus}
+                analysisStatus={getSmartAnalysisStatus()}
               />
 
               {renderStageResults()}
@@ -762,7 +822,6 @@ const MobileView = () => {
             </div>
           )}
 
-          {/* QR Code Modal */}
           <QRCodeModal
             url={downloadUrl}
             isOpen={showQRCode}

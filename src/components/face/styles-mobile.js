@@ -367,7 +367,7 @@ export const RotatingCircle = styled.div`
   border: 3px solid ${props => props.isActive ? MAIN_COLOR : '#E0E0E0'};
   border-radius: 50%;
   border-top-color: transparent;
-  border-top-width: 6px; // 讓縫隙更明顯一點
+  border-top-width: 2px; // 讓縫隙更明顯一點
   animation: ${props => props.isProcessing ? rotateCircle : 'none'} 2s linear infinite;
 `;
 
@@ -437,7 +437,7 @@ export const ProgressText = styled.div`
   font-family: "Noto Serif TC", serif;
   font-size: 14px;
   color: ${props => 
-    props.completed ? '#4CAF50' : 
+    props.completed ? MAIN_COLOR: 
     props.isActive ? MAIN_COLOR : 
     '#999999'  // pending 狀態是灰色
   };

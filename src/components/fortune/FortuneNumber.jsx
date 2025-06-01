@@ -4,7 +4,6 @@ import { config } from "../../config";
 import FortuneInterpret from "./FortuneInterpret";
 import { useTranslation, translateError } from "../../i18n";
 
-
 const MAIN_COLOR = "#C84B31";
 
 const Container = styled.div`
@@ -128,6 +127,7 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
           user_name: user_name,
           fortune_category: category,
           fortune_number: localFortuneNumber,
+          lang: lang
         }),
       });
 
@@ -140,7 +140,9 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
       setInterpretation(result);
     } catch (error) {
       console.error("Error:", error);
-      alert(error.message || "解籤失敗，請稍後再試");
+      // 使用翻譯的錯誤訊息
+      const errorMessage = translateError(error.message, lang) || t("fortuneTelling.interpretError");
+      alert(errorMessage);
     } finally {
       setIsInterpreting(false);
     }
@@ -153,6 +155,7 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
         category={category}
         fortuneNumber={localFortuneNumber}
         interpretation={interpretation}
+        lang={lang}  // 🔸 加入語言參數傳遞給子組件
       />
     );
   }

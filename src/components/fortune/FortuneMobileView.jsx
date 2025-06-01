@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 import {
   PageWrapper,
   ChineseContainer,
@@ -21,21 +21,21 @@ import {
   ModalCloseButton,
   NumberInput,
   NumberButtonGrid,
-  NumberButton
-} from './styles-fortune-mobile';
-import FortuneResult from './FortuneNumber';
+  NumberButton,
+} from "./styles-fortune-mobile";
+import FortuneResult from "./FortuneNumber";
 import LanguageSwitcher from "../common/LanguageSwitcher";
 import { useTranslation, translateError } from "../../i18n";
 
 const FortuneMobileView = ({ lang }) => {
   const [searchParams] = useSearchParams();
   const { t } = useTranslation(lang);
-  
-  const [name, setName] = useState('');
+
+  const [name, setName] = useState("");
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [showNumberModal, setShowNumberModal] = useState(false);
-  const [fortuneNumber, setFortuneNumber] = useState('');
+  const [fortuneNumber, setFortuneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [existingNumber, setExistingNumber] = useState(null);
   const [instanceKey, setInstanceKey] = useState(Date.now()); // 用於強制重新渲染FortuneResult
@@ -53,7 +53,7 @@ const FortuneMobileView = ({ lang }) => {
       setExistingNumber(null);
       setFortuneNumber("");
       setError("");
-      
+
       // 更新URL，移除reset參數
       const url = new URL(window.location.href);
       url.searchParams.delete("reset");
@@ -67,21 +67,21 @@ const FortuneMobileView = ({ lang }) => {
       setError(t("fortuneTelling.noCategoryError"));
       return;
     }
-    
+
     if (!name.trim()) {
       setError(t("fortuneTelling.noNameError", { defaultValue: "請輸入姓名" }));
       return;
     }
-    
+
     setIsLoading(true);
     setError("");
-    
+
     // 清空既有籤號
     setExistingNumber(null);
-    
+
     // 生成新的instanceKey，確保FortuneResult組件完全重新渲染
     setInstanceKey(Date.now());
-    
+
     // 使用延時確保狀態更新完成後再顯示結果
     setTimeout(() => {
       setShowResult(true);
@@ -93,37 +93,43 @@ const FortuneMobileView = ({ lang }) => {
     const number = parseInt(fortuneNumber);
     if (number >= 1 && number <= 24) {
       if (!name.trim()) {
-        setError(t("fortuneTelling.noNameError", { defaultValue: "請輸入姓名" }));
+        setError(
+          t("fortuneTelling.noNameError", { defaultValue: "請輸入姓名" })
+        );
         return;
       }
-      
+
       setIsLoading(true);
       setError("");
-      
+
       // 設置已有籤號
       setExistingNumber(number);
-      
+
       // 關閉模態框
       setShowNumberModal(false);
-      
+
       // 生成新的instanceKey
       setInstanceKey(Date.now());
-      
+
       // 延時顯示結果
       setTimeout(() => {
         setShowResult(true);
         setIsLoading(false);
       }, 50);
     } else {
-      setError(t("fortuneTelling.invalidFortuneNumber", { defaultValue: "請輸入 1-24 之間的籤號" }));
+      setError(
+        t("fortuneTelling.invalidFortuneNumber", {
+          defaultValue: "請輸入 1-24 之間的籤號",
+        })
+      );
     }
   };
 
   const handleRetry = () => {
-    setName('');
+    setName("");
     setSelectedCategory(null);
     setShowResult(false);
-    setFortuneNumber('');
+    setFortuneNumber("");
     setExistingNumber(null);
     setError("");
   };
@@ -139,15 +145,24 @@ const FortuneMobileView = ({ lang }) => {
 
         <ContentWrapper>
           <LanguageSwitcher />
-          
+
           {!showResult ? (
             <>
               <TitleContainer>
-                <img src="/app_title_fortune.png" alt={t("fortuneTelling.title")} />
+                <img
+                  src={`/app_title_fortune_${lang}.png`}
+                  alt={t("fortuneTelling.title")}
+                  onError={(e) => {
+                    e.target.src = "/app_title_fortune.png"; // 回退到預設圖片
+                  }}
+                />
               </TitleContainer>
 
               <LogoContainer>
-                <img src="/mobile_logo_fortune.png" alt={t("fortuneTelling.title")} />
+                <img
+                  src="/mobile_logo_fortune_nova.png"
+                  alt={t("fortuneTelling.title")}
+                />
               </LogoContainer>
 
               <FormContainer>
@@ -163,54 +178,56 @@ const FortuneMobileView = ({ lang }) => {
 
                 <ButtonGroup>
                   <CategoryButton
-                    selected={selectedCategory === 'love'}
-                    onClick={() => setSelectedCategory('love')}
+                    selected={selectedCategory === "love"}
+                    onClick={() => setSelectedCategory("love")}
                   >
                     {t("fortuneTelling.category.love")}
                   </CategoryButton>
                   <CategoryButton
-                    selected={selectedCategory === 'career'}
-                    onClick={() => setSelectedCategory('career')}
+                    selected={selectedCategory === "career"}
+                    onClick={() => setSelectedCategory("career")}
                   >
                     {t("fortuneTelling.category.career")}
                   </CategoryButton>
                   <CategoryButton
-                    selected={selectedCategory === 'wealth'}
-                    onClick={() => setSelectedCategory('wealth')}
+                    selected={selectedCategory === "wealth"}
+                    onClick={() => setSelectedCategory("wealth")}
                   >
                     {t("fortuneTelling.category.wealth")}
                   </CategoryButton>
                   <CategoryButton
-                    selected={selectedCategory === 'family'}
-                    onClick={() => setSelectedCategory('family')}
+                    selected={selectedCategory === "family"}
+                    onClick={() => setSelectedCategory("family")}
                   >
                     {t("fortuneTelling.category.family")}
                   </CategoryButton>
                   <CategoryButton
-                    selected={selectedCategory === 'study'}
-                    onClick={() => setSelectedCategory('study')}
+                    selected={selectedCategory === "study"}
+                    onClick={() => setSelectedCategory("study")}
                   >
                     {t("fortuneTelling.category.study")}
                   </CategoryButton>
                   <CategoryButton
-                    selected={selectedCategory === 'travel'}
-                    onClick={() => setSelectedCategory('travel')}
+                    selected={selectedCategory === "travel"}
+                    onClick={() => setSelectedCategory("travel")}
                   >
                     {t("fortuneTelling.category.travel")}
                   </CategoryButton>
                 </ButtonGroup>
 
                 {error && (
-                  <div style={{ 
-                    color: 'red', 
-                    backgroundColor: '#fee', 
-                    padding: '10px', 
-                    margin: '10px 0', 
-                    borderRadius: '5px',
-                    textAlign: 'center',
-                    width: '90%',
-                    maxWidth: '400px'
-                  }}>
+                  <div
+                    style={{
+                      color: "red",
+                      backgroundColor: "#fee",
+                      padding: "10px",
+                      margin: "10px 0",
+                      borderRadius: "5px",
+                      textAlign: "center",
+                      width: "90%",
+                      maxWidth: "400px",
+                    }}
+                  >
                     {error}
                   </div>
                 )}
@@ -219,17 +236,19 @@ const FortuneMobileView = ({ lang }) => {
                   disabled={!selectedCategory || isLoading || !name.trim()}
                   onClick={handleStartFortune}
                 >
-                  {isLoading ? t("common.loading") : t("fortuneTelling.startFortuneTelling")}
+                  {isLoading
+                    ? t("common.loading")
+                    : t("fortuneTelling.startFortuneTelling")}
                 </StartButton>
 
                 <StartButton
                   disabled={!selectedCategory || isLoading || !name.trim()}
                   onClick={() => setShowNumberModal(true)}
-                  style={{ 
-                    backgroundColor: 'transparent', 
-                    color: '#C84B31', 
-                    border: '2px solid #C84B31',
-                    marginTop: '10px'
+                  style={{
+                    backgroundColor: "transparent",
+                    color: "#C84B31",
+                    border: "2px solid #C84B31",
+                    marginTop: "10px",
                   }}
                 >
                   {t("fortuneTelling.hasFortuneNumber")}
@@ -250,7 +269,7 @@ const FortuneMobileView = ({ lang }) => {
 
       {showNumberModal && (
         <ModalOverlay onClick={() => setShowNumberModal(false)}>
-          <ModalContent onClick={e => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalCloseButton onClick={() => setShowNumberModal(false)}>
               <X size={20} />
             </ModalCloseButton>
@@ -263,7 +282,7 @@ const FortuneMobileView = ({ lang }) => {
               onChange={(e) => setFortuneNumber(e.target.value)}
               placeholder={t("fortuneTelling.fortuneNumberPlaceholder")}
             />
-            
+
             {/* 數字按鈕 */}
             <NumberButtonGrid>
               {Array.from({ length: 24 }, (_, i) => i + 1).map((num) => (
@@ -276,33 +295,46 @@ const FortuneMobileView = ({ lang }) => {
                 </NumberButton>
               ))}
             </NumberButtonGrid>
-            
+
             {error && (
-              <div style={{ 
-                color: 'red', 
-                backgroundColor: '#fee', 
-                padding: '10px', 
-                margin: '10px 0', 
-                borderRadius: '5px',
-                textAlign: 'center'
-              }}>
+              <div
+                style={{
+                  color: "red",
+                  backgroundColor: "#fee",
+                  padding: "10px",
+                  margin: "10px 0",
+                  borderRadius: "5px",
+                  textAlign: "center",
+                }}
+              >
                 {error}
               </div>
             )}
-            
+
             <StartButton
               onClick={handleExistingNumber}
-              disabled={isLoading || !fortuneNumber || parseInt(fortuneNumber) < 1 || parseInt(fortuneNumber) > 24}
+              disabled={
+                isLoading ||
+                !fortuneNumber ||
+                parseInt(fortuneNumber) < 1 ||
+                parseInt(fortuneNumber) > 24
+              }
             >
               {isLoading ? t("common.loading") : t("fortuneTelling.confirm")}
             </StartButton>
           </ModalContent>
         </ModalOverlay>
       )}
-      
+
       {isLoading && (
         <ModalOverlay>
-          <div style={{ color: 'white', fontSize: '20px', fontFamily: 'Noto Serif TC, serif' }}>
+          <div
+            style={{
+              color: "white",
+              fontSize: "20px",
+              fontFamily: "Noto Serif TC, serif",
+            }}
+          >
             {t("common.loading")}
           </div>
         </ModalOverlay>

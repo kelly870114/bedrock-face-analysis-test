@@ -43,11 +43,18 @@ class PubSubService {
         error: error => this.handleError(error, callbacks.onError)
       });
       
-      // 狀態更新
+      // 【優化】狀態更新 - 更詳細的狀態處理
       this.subscriptions.status = PubSub.subscribe(`face-analysis/${sessionId}/status`).subscribe({
         next: data => {
           console.log('收到狀態更新:', data.value);
-          if (callbacks.onStatusUpdate) callbacks.onStatusUpdate(data.value);
+          const statusData = data.value;
+          
+          // 根據不同階段提供更具體的狀態更新
+          if (statusData.stage && statusData.status) {
+            console.log(`階段 ${statusData.stage} 狀態更新為: ${statusData.status}`);
+          }
+          
+          if (callbacks.onStatusUpdate) callbacks.onStatusUpdate(statusData);
         },
         error: error => this.handleError(error, callbacks.onError)
       });
@@ -56,7 +63,17 @@ class PubSubService {
       this.subscriptions.error = PubSub.subscribe(`face-analysis/${sessionId}/error`).subscribe({
         next: data => {
           console.log('收到錯誤訊息:', data.value);
-          if (callbacks.onError) callbacks.onError(data.value.error);
+          const errorData = data.value;
+          
+          // 【優化】更詳細的錯誤處理
+          let errorMessage = '分析過程中發生錯誤';
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          } else if (errorData.stage) {
+            errorMessage = `${errorData.stage} 階段分析失敗`;
+          }
+          
+          if (callbacks.onError) callbacks.onError(errorMessage);
         },
         error: error => this.handleError(error, callbacks.onError)
       });
@@ -75,7 +92,7 @@ class PubSubService {
       return true;
     } catch (error) {
       console.error('訂閱主題時發生錯誤:', error);
-      if (callbacks.onError) callbacks.onError(error);
+      if (callbacks.onError) callbacks.onError('無法建立即時連線，請重新嘗試');
       return false;
     }
   }
@@ -85,7 +102,47 @@ class PubSubService {
    */
   handleError(error, callback) {
     console.error('PubSub錯誤:', error);
-    if (callback) callback(error);
+    
+    // 更友善的錯誤訊息
+    let friendlyMessage = '連線發生問題，請重新嘗試';
+    
+    if (error.message) {
+      if (error.message.includes('Connection')) {
+        friendlyMessage = '網路連線中斷，請檢查網路後重試';
+      } else if (error.message.includes('Auth')) {
+        friendlyMessage = '認證失敗，請重新整理頁面';
+      } else if (error.message.includes('Permission')) {
+        friendlyMessage = '權限不足，請聯絡管理員';
+      }
+    }
+    
+    if (callback) callback(friendlyMessage);
+  }
+
+  /**
+   * 檢查連線狀態
+   */
+  getConnectionStatus() {
+    return {
+      isConnected: this.isConnected,
+      sessionId: this.sessionId,
+      activeSubscriptions: Object.keys(this.subscriptions).length
+    };
+  }
+
+  /**
+   * 重新連線功能
+   */
+  reconnect(callbacks) {
+    console.log('嘗試重新連線...');
+    this.disconnect();
+    
+    if (this.sessionId) {
+      return this.connect(this.sessionId, callbacks);
+    }
+    
+    console.warn('無法重新連線：缺少 sessionId');
+    return false;
   }
 
   /**
@@ -105,6 +162,7 @@ class PubSubService {
       
       this.subscriptions = {};
       this.isConnected = false;
+      this.sessionId = null; // 清除 sessionId
       console.log('成功取消所有訂閱');
       return true;
     } catch (error) {

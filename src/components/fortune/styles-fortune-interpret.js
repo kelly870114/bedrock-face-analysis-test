@@ -129,7 +129,7 @@ export const BlockTitle = styled.div`
 export const ContentItem = styled.div`
   margin-bottom: 12px;
   text-align: center;
-  width: 100%;  // 新增：確保內容寬度一致
+  width: 100%;  // 確保內容寬度一致
 `;
 
 export const ItemTitle = styled.h4`
@@ -148,7 +148,7 @@ export const ItemContent = styled.p`
   margin: 0;
   text-align: center;
   font-family: "Noto Serif TC", serif;
-  width: 100%;  // 新增：確保內容寬度一致
+  width: 100%;  // 確保內容寬度一致
 `;
 
 export const IconImage = styled.div`

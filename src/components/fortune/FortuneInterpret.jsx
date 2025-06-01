@@ -65,7 +65,7 @@ const FortuneInterpret = ({
   category, 
   fortuneNumber,
   interpretation,
-  lang // 新增語言參數
+  lang // 語言參數
 }) => {
   const { t } = useTranslation(lang); // 使用翻譯 Hook
   const [showCamera, setShowCamera] = useState(false);

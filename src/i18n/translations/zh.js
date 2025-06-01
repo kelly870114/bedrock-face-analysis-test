@@ -9,10 +9,17 @@ export default {
     back: "返回",
     close: "關閉",
     save: "儲存",
-    processing: "處理中...", // 新增
-    decoration: "裝飾", // 新增
+    processing: "處理中...",
+    decoration: "裝飾",
+    and: "與",
+    stage: "階段",
+    stages: "階段",
+    analyzing: "分析中",
+    completed: "已完成",
+    failed: "失敗",
+    pending: "等待中",
     copyright:
-      "© 2024 Amazon Web Services Solutions Architect. All rights reserved.",
+      "© 2025 Amazon Web Services Solutions Architect. All rights reserved.",
   },
 
   // 桌面視圖
@@ -44,22 +51,35 @@ export default {
     processing: "處理中...",
     scanToDownload: "掃描 QR Code 下載分析結果",
     downloadExpiration: "請在 10 分鐘內完成下載",
-    capturedImage: "拍攝的照片", // 新增
-    waiting: "等待中", // 新增
-    preparing: "準備中...", // 新增
-    analyzingFaceShape: "臉型比例分析中...", // 新增
-    faceShapeCompleted: "臉型分析完成！正在分析五官...", // 新增
-    featuresCompleted: "五官分析完成！正在進行綜合分析...", // 新增
-    analysisCompleted: "分析完成！", // 新增
-    waitingToStart: "等待開始", // 新增
-    connectionFailed: "連接失敗", // 新增
-    connectionLost: "連接中斷", // 新增
-    analysisError: "分析出現錯誤", // 新增
-    analysisFailed: "分析失敗", // 新增
-    missingSessionId: "缺少會話ID", // 新增
-    cannotGetUploadUrl: "無法獲取上傳網址", // 新增
-    imageUploadFailed: "圖片上傳失敗", // 新增
-    processingFailed: "圖片處理失敗，請稍後再試", // 新增
+    capturedImage: "拍攝的照片",
+    waiting: "等待中",
+    preparing: "準備中...",
+    analyzingFaceShape: "臉型比例分析中...",
+    faceShapeCompleted: "臉型分析完成！正在分析五官...",
+    featuresCompleted: "五官分析完成！正在進行綜合分析...",
+    analysisCompleted: "分析完成！",
+    waitingToStart: "等待開始",
+    connectionFailed: "連接失敗",
+    connectionLost: "連接中斷",
+    analysisError: "分析出現錯誤",
+    analysisFailed: "分析失敗",
+    missingSessionId: "缺少會話ID",
+    cannotGetUploadUrl: "無法獲取上傳網址",
+    imageUploadFailed: "圖片上傳失敗",
+    processingFailed: "圖片處理失敗，請稍後再試",
+    stageCompleted: "分析完成，等待其他階段...",
+    
+    // 並行處理相關翻譯
+    analyzingBothStages: "正在同時分析臉型與五官特徵...",
+    analyzingFeatures: "五官特徵分析中...",
+    analyzingOverall: "綜合運勢分析中...",
+    preparingOverall: "準備進行綜合分析...",
+    faceShape: "臉型",
+    features: "五官",
+    faceShapeCompleteWaiting: "臉型分析完成，等待五官分析...",
+    featuresCompleteWaiting: "五官分析完成，等待臉型分析...",
+    bothStagesComplete: "臉型與五官分析完成，準備綜合分析...",
+    
     faceShapeStages: {
       pending: "臉型比例分析等待中",
       processing: "臉型比例分析中...",
