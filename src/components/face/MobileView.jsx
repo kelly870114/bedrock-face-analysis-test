@@ -168,6 +168,43 @@ const MobileView = () => {
     checkEventAccess();
   }, [searchParams, t]);
 
+  // 處理重置參數
+  useEffect(() => {
+    const resetParam = searchParams.get("reset");
+    if (resetParam) {
+      // 重置所有狀態到初始狀態
+      setIsAnalyzing(false);
+      setAnalysisResult(null);
+      setCapturedImage(null);
+      setFaceShapeResult(null);
+      setFeaturesResult(null);
+      setOverallResult(null);
+      setSummary("");
+      setError(null);
+      setSessionId(null);
+      setAnalysisStatus("等待開始");
+      setStageStatus({
+        faceShape: { status: "pending", result: null },
+        features: { status: "pending", result: null },
+        overall: { status: "pending", result: null, summary: null },
+      });
+
+      // 清理 IoT 連接
+      if (iotClientRef.current) {
+        iotClientRef.current.disconnect();
+        iotClientRef.current = null;
+      }
+
+      // 移除 URL 中的 reset 參數
+      const url = new URL(window.location.href);
+      url.searchParams.delete("reset");
+      window.history.replaceState({}, "", url);
+      
+      // 🔥 強制重新設定載入狀態為 false，確保回到首頁
+      setIsLoading(false);
+    }
+  }, [searchParams]);
+
   // 組件卸載時清理 IoT 連接
   useEffect(() => {
     return () => {
@@ -219,7 +256,7 @@ const MobileView = () => {
 
     if (completedStages.length > 0) {
       // 使用模板字符串替換，需要手動處理
-      const stagesText = completedStages.join(t("common.and")); 
+      const stagesText = completedStages.join(t("common.and"));
       return `${stagesText}${t("faceAnalysis.stageCompleted")}`;
     }
 
@@ -448,7 +485,7 @@ const MobileView = () => {
     }
   };
 
-  // 處理重拍
+  // 處理重拍 - 回到首頁
   const handleRetake = () => {
     // 清理舊資源
     if (capturedImage) {
@@ -477,8 +514,8 @@ const MobileView = () => {
       overall: { status: "pending", result: null, summary: null },
     });
 
-    // 打開相機
-    setShowCamera(true);
+    // 回到首頁，不要打開相機
+    setIsAnalyzing(false);
   };
 
   // 下載分析結果的處理函數

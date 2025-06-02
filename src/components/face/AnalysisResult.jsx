@@ -69,7 +69,7 @@ const AnalysisResult = ({
   const [isUploading, setIsUploading] = useState(false);
   const resultRef = useRef(null);
   const urlParams = new URLSearchParams(window.location.search);
-  const eventId = urlParams.get('event');
+  const eventId = urlParams.get("event");
 
   const getIconForBlock = (blockIndex) => {
     return `/face_${blockIndex}_white.png`;
@@ -81,18 +81,18 @@ const AnalysisResult = ({
 
       // 取得目標元素
       const element = resultRef.current;
-      
+
       // 獲取元素的實際尺寸
       const originalWidth = element.offsetWidth;
       const originalHeight = element.offsetHeight;
-      
+
       // 創建一個新的容器來保持原始佈局
-      const container = document.createElement('div');
+      const container = document.createElement("div");
       container.style.width = `${originalWidth}px`;
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '-9999px';
-      
+      container.style.position = "absolute";
+      container.style.left = "-9999px";
+      container.style.top = "-9999px";
+
       // 克隆目標元素到新容器
       const clone = element.cloneNode(true);
       container.appendChild(clone);
@@ -108,12 +108,14 @@ const AnalysisResult = ({
         height: originalHeight,
         onclone: (clonedDoc) => {
           // 確保克隆的元素有正確的樣式
-          const clonedElement = clonedDoc.body.querySelector('[class*="ResultContainer"]');
+          const clonedElement = clonedDoc.body.querySelector(
+            '[class*="ResultContainer"]'
+          );
           if (clonedElement) {
             clonedElement.style.width = `${originalWidth}px`;
             clonedElement.style.height = `${originalHeight}px`;
           }
-        }
+        },
       });
 
       // 清理臨時元素
@@ -170,7 +172,10 @@ const AnalysisResult = ({
       setShowQRCode(true);
     } catch (error) {
       console.error("處理失敗:", error);
-      alert(translateError(error.message, language) || t("faceAnalysis.processingFailed"));
+      alert(
+        translateError(error.message, language) ||
+          t("faceAnalysis.processingFailed")
+      );
     } finally {
       setIsUploading(false);
     }
@@ -188,9 +193,19 @@ const AnalysisResult = ({
           <AnalysisBlock>
             <IconImage src={getIconForBlock(1)} />
             <BlockTitle>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
-              <span className="title-text">{result.faceShape.title || t("faceAnalysis.faceShapeAnalysis")}</span>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
+              <span className="title-text">
+                {result.faceShape.title || t("faceAnalysis.faceShapeAnalysis")}
+              </span>
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
             </BlockTitle>
             {Object.entries(result.faceShape.content).map(([key, value]) => (
               <ContentItem key={key}>
@@ -205,9 +220,19 @@ const AnalysisResult = ({
           <AnalysisBlock>
             <IconImage src={getIconForBlock(2)} />
             <BlockTitle>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
-              <span className="title-text">{result.features.title || t("faceAnalysis.featureAnalysis")}</span>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
+              <span className="title-text">
+                {result.features.title || t("faceAnalysis.featureAnalysis")}
+              </span>
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
             </BlockTitle>
             {Object.entries(result.features.content).map(([key, value]) => (
               <ContentItem key={key}>
@@ -222,9 +247,19 @@ const AnalysisResult = ({
           <AnalysisBlock>
             <IconImage src={getIconForBlock(3)} />
             <BlockTitle>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
-              <span className="title-text">{result.overall.title || t("faceAnalysis.overallAnalysis")}</span>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
+              <span className="title-text">
+                {result.overall.title || t("faceAnalysis.overallAnalysis")}
+              </span>
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
             </BlockTitle>
             {Object.entries(result.overall.content).map(([key, value]) => (
               <ContentItem key={key}>
@@ -238,9 +273,17 @@ const AnalysisResult = ({
         {result.summary && (
           <Summary>
             <BlockTitle>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
               <span className="title-text">{t("faceAnalysis.summary")}</span>
-              <img src="/chinese_tie.png" alt={t("common.decoration")} className="title-icon" />
+              <img
+                src="/chinese_tie.png"
+                alt={t("common.decoration")}
+                className="title-icon"
+              />
             </BlockTitle>
             <p>{result.summary}</p>
           </Summary>
@@ -248,16 +291,25 @@ const AnalysisResult = ({
       </ResultContainer>
 
       <DownloadButton onClick={handleDownload} disabled={isUploading}>
-        {isUploading ? t("common.processing") : t("faceAnalysis.downloadResult")}
+        {isUploading
+          ? t("common.processing")
+          : t("faceAnalysis.downloadResult")}
       </DownloadButton>
       {isFromFortune ? (
         <RetakeButton
-          onClick={() => (window.location.href = `/fortune/mobile?event=${eventId}`)}
+          onClick={() =>
+            (window.location.href = `/fortune/mobile?event=${eventId}`)
+          }
         >
           {t("fortuneTelling.retryFortune")}
         </RetakeButton>
       ) : (
-        <RetakeButton onClick={onRetake}>
+        <RetakeButton
+          onClick={() => {
+            const currentLang = language || "zh";
+            window.location.href = `/${currentLang}/face/mobile?event=${eventId}&reset=true`;
+          }}
+        >
           {t("faceAnalysis.retakePhoto")}
         </RetakeButton>
       )}
