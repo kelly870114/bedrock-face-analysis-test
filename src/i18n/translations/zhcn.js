@@ -144,5 +144,7 @@ export default {
     cannotGetUploadUrl: "无法获取上传网址",
     imageUploadFailed: "图片上传失败",
     processingFailed: "处理失败，请稍后再试",
+    scanToDownload: "扫描 QR Code 下载分析结果",
+    downloadExpiration: "请在 10 分钟内完成下载",
   },
 };
