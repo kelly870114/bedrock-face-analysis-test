@@ -144,5 +144,7 @@ export default {
     cannotGetUploadUrl: "Cannot get upload URL",
     imageUploadFailed: "Image upload failed",
     processingFailed: "Processing failed, please try again later",
+    scanToDownload: "Scan QR Code to download analysis results",
+    downloadExpiration: "Please download within 10 minutes",
   },
 };
