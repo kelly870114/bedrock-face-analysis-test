@@ -144,7 +144,8 @@ const FortuneMobileView = ({ lang }) => {
         <Corner className="bottom-right" />
 
         <ContentWrapper>
-          <LanguageSwitcher />
+          {/* 語言切換器 - 只在初始選擇頁面顯示 */}
+          {!showResult && <LanguageSwitcher />}
 
           {!showResult ? (
             <>
@@ -232,14 +233,15 @@ const FortuneMobileView = ({ lang }) => {
                   </div>
                 )}
 
-                <StartButton
+                {/* hide for event */}
+                {/* <StartButton
                   disabled={!selectedCategory || isLoading || !name.trim()}
                   onClick={handleStartFortune}
                 >
                   {isLoading
                     ? t("common.loading")
                     : t("fortuneTelling.startFortuneTelling")}
-                </StartButton>
+                </StartButton> */}
 
                 <StartButton
                   disabled={!selectedCategory || isLoading || !name.trim()}

@@ -391,14 +391,15 @@ const FortuneInterpret = ({
         >
           {isUploading ? t("common.processing") : t("fortuneTelling.downloadResult")}
         </ActionButton>
-
-        <ActionButton 
+        
+        {/* hide for event */}
+        {/* <ActionButton 
           onClick={() => setShowCamera(true)}
           disabled={isAnalyzing}
         >
           <CameraIcon size={24} />
           {t("fortuneTelling.combineWithFace")}
-        </ActionButton>
+        </ActionButton> */}
 
         <ActionButton 
           onClick={() => window.location.reload()}

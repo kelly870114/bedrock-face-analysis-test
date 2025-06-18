@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { config } from "../../config";
 import FortuneInterpret from "./FortuneInterpret";
 import { useTranslation, translateError } from "../../i18n";
+import { LoadingContainer, FortuneIcon } from "./styles-fortune-mobile";
 
 const MAIN_COLOR = "#C84B31";
 
@@ -88,14 +89,12 @@ const LoadingOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  color: white;
-  font-size: 20px;
-  font-family: "Noto Serif TC", serif;
+  backdrop-filter: blur(3px);
 `;
 
 const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => {
@@ -196,7 +195,15 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
       </ButtonContainer>
 
       {isInterpreting && (
-        <LoadingOverlay>{t("fortuneTelling.interpreting")}</LoadingOverlay>
+        <LoadingOverlay>
+          <LoadingContainer>
+            <FortuneIcon 
+              src="/fortune-lot.png" 
+              alt="Fortune Lot"
+            />
+            {t("fortuneTelling.interpreting")}
+          </LoadingContainer>
+        </LoadingOverlay>
       )}
     </Container>
   );

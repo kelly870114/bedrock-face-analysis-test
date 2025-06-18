@@ -106,7 +106,7 @@ const AnimatedProgressIndicator = ({
   const featuresStatus = getStageStatus('features');
   const overallStatus = getStageStatus('overall');
 
-  // 🔥 修復2：簡化圖片選擇邏輯，移除 useMemo 避免無限重渲染
+  // 簡化圖片選擇邏輯，移除 useMemo 避免無限重渲染
   const getCurrentFeatureImage = () => {
     // 直接回傳當前索引的圖片，不管是什麼狀態
     return featureImages[currentFeatureIndex];

@@ -1,6 +1,21 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 export const MAIN_COLOR = '#C84B31';
+
+// 籤筒搖晃動畫
+const fortuneShake = keyframes`
+  0% { transform: rotate(0deg); }
+  10% { transform: rotate(-4deg); }
+  20% { transform: rotate(4deg); }
+  30% { transform: rotate(-4deg); }
+  40% { transform: rotate(4deg); }
+  50% { transform: rotate(-3deg); }
+  60% { transform: rotate(3deg); }
+  70% { transform: rotate(-2deg); }
+  80% { transform: rotate(2deg); }
+  90% { transform: rotate(-1deg); }
+  100% { transform: rotate(0deg); }
+`;
 
 export const PageWrapper = styled.div`
   min-height: 100vh;
@@ -115,7 +130,7 @@ export const TitleContainer = styled.div`
   margin: 0 auto;
   text-align: center;
   flex-shrink: 0;
-  padding-top: 10px;
+  padding-top: 30px;
 
   img {
     width: 100%;
@@ -138,7 +153,7 @@ export const LogoContainer = styled.div`
   max-height: 35vh;
 
   img {
-    width: 60%;
+    width: 65%;
     height: auto;
     object-fit: contain;
     transform: scale(1.1);
@@ -341,4 +356,30 @@ export const NumberButton = styled.button`
   &:hover {
     background-color: ${props => props.selected ? '#B85C38' : '#fff0e6'};
   }
+`;
+
+// 載入動畫容器
+export const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  color: white;
+  font-size: 20px;
+  font-family: "Noto Serif TC", serif;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 40px;
+  border-radius: 20px;
+  backdrop-filter: blur(5px);
+  border: 2px solid ${MAIN_COLOR};
+`;
+
+// 搖晃的籤筒圖示
+export const FortuneIcon = styled.img`
+  width: auto;
+  height: 80px;
+  max-width: 60px;
+  object-fit: contain;
+  animation: ${fortuneShake} 1.8s ease-in-out infinite;
 `;
