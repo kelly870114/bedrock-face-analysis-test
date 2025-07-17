@@ -82,9 +82,9 @@ const QRCodeModal = ({ url, isOpen, onClose }) => {
   );
 };
 
-const MobileView = () => {
+const MobileView = ({ lang }) => {
   const [searchParams] = useSearchParams();
-  const { t, language } = useTranslation();
+  const { t, language } = useTranslation(lang);
   const [showCamera, setShowCamera] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
@@ -775,7 +775,14 @@ const MobileView = () => {
           {!isAnalyzing && !analysisResult && (
             <>
               <TitleContainer>
-                <img src="/app_title.png" alt={t("faceAnalysis.title")} />
+                {/* <img src="/app_title_face.png" alt={t("faceAnalysis.title")} /> */}
+                <img
+                  src={`/app_title_face_${lang}.png`}
+                  alt={t("faceAnalyzer.title")}
+                  onError={(e) => {
+                    e.target.src = "/app_title_face.png"; // 回退到預設圖片
+                  }}
+                />
               </TitleContainer>
 
               <LogoContainer>
