@@ -4,159 +4,205 @@
 > </div>
 > For more Amazon Q Developer's new feature: https://aws.amazon.com/blogs/aws/new-amazon-q-developer-agent-capabilities-include-generating-documentation-code-reviews-and-unit-tests/
 &nbsp;
-# Amazon Bedrock Face Analysis Web Application
 
-This project is a web application that uses Amazon Bedrock to analyze facial features based on user-uploaded photos.
+# Amazon Bedrock AI Analysis Web Application
 
-The application consists of a React-based frontend that allows users to capture photos using their mobile device's camera or enter an event code on desktop. The captured images are then sent to a backend API for analysis using Amazon Bedrock's AI capabilities.
+A multi-language web application that leverages Amazon Bedrock for AI-powered face analysis and fortune telling services. The application provides both physiognomy analysis and traditional Chinese fortune telling experiences through an intuitive mobile-first interface.
 
-## Repository Structure
+## 🌟 Features
+
+- **Face Reading Master (面相大師)**: AI-powered facial feature analysis and fortune prediction
+- **Fortune Telling Master (解籤大師)**: Traditional Chinese fortune telling with personalized interpretations
+- **Multi-language Support**: English, Traditional Chinese, and Simplified Chinese
+- **Real-time Analysis**: Live progress tracking with WebSocket connections
+- **Mobile-Optimized**: Camera integration and responsive design
+- **QR Code Integration**: Seamless desktop-to-mobile workflow
+
+## 🏗️ Architecture
+
+The application uses a serverless architecture powered by AWS services:
+
+- **Frontend**: React.js with styled-components
+- **Backend**: AWS Lambda + API Gateway
+- **AI Engine**: Amazon Bedrock for analysis
+- **Real-time Updates**: AWS IoT Core for WebSocket communication
+- **Authentication**: AWS Cognito Identity Pool
+- **Hosting**: AWS Amplify
+
+## 📁 Project Structure
 
 ```
-.
-├── package.json
-├── public
-│   ├── index.html
-│   └── manifest.json
-├── README.md
-└── src
-    ├── App.css
-    ├── App.jsx
-    ├── App.test.js
-    ├── components
-    │   ├── desktop
-    │   │   ├── DesktopView.jsx
-    │   │   └── styles.js
-    │   └── mobile
-    │       ├── AnalysisResult.jsx
-    │       ├── Camera.jsx
-    │       ├── MobileView.jsx
-    │       └── styles.js
-    ├── config
-    │   └── index.js
-    ├── index.css
-    └── index.js
+frontend/
+├── public/                     # Static assets
+│   ├── jenn-ai/               # AI-generated face analysis images
+│   ├── app_title_*.png        # Application titles in different languages
+│   ├── face_*.png             # Face analysis UI assets
+│   └── architecture.png       # System architecture diagram
+├── src/
+│   ├── components/
+│   │   ├── common/            # Shared components
+│   │   │   ├── Camera/        # Camera capture functionality
+│   │   │   ├── DesktopView/   # Desktop entry point
+│   │   │   └── LanguageSwitcher.jsx
+│   │   ├── face/              # Face analysis components
+│   │   │   ├── MobileView.jsx
+│   │   │   ├── AnalysisResult.jsx
+│   │   │   └── AnimatedProgressIndicator.jsx
+│   │   ├── fortune/           # Fortune telling components
+│   │   │   ├── FortuneMobileView.jsx
+│   │   │   ├── FortuneInterpret.jsx
+│   │   │   └── FortuneNumber.jsx
+│   │   └── utils/             # Utility services
+│   │       ├── amplifyConfig.js
+│   │       ├── iotService.js
+│   │       └── pubSubService.js
+│   ├── config/                # Configuration files
+│   ├── i18n/                  # Internationalization
+│   │   ├── translations/      # Language files (en, zh, zhcn)
+│   │   └── config.js
+│   └── App.jsx                # Main application router
+└── package.json
 ```
 
-### Key Files:
-
-- `src/index.js`: The entry point of the React application.
-- `src/components/mobile/MobileView.jsx`: Handles the mobile view of the application, including camera functionality and result display.
-- `src/components/mobile/AnalysisResult.jsx`: Renders the analysis results received from the backend.
-- `src/components/mobile/Camera.jsx`: Manages the camera interface for capturing photos.
-- `src/components/desktop/DesktopView.jsx`: Handles the desktop view, including event code input and QR code generation.
-- `src/config/index.js`: Contains configuration settings, including the API endpoint.
-
-## Usage Instructions
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- Node.js (version 14 or higher)
-- npm (version 6 or higher)
+- Node.js 16+ and npm
+- AWS account with Bedrock access
+- Valid event code from organizer
 
 ### Installation
 
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   ```
-
-2. Navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
-
-3. Install dependencies:
-   ```
-   npm install
-   ```
-
-### Configuration
-
-Set the `REACT_APP_API_ENDPOINT` environment variable in /src/config/index.js to your  API Gateway endpoint. If not set, it will default to `'https://nc009yrm00.execute-api.us-east-1.amazonaws.com/prod'`.
-
-### Running the Application
-
-1. Start the development server:
-   ```
-   npm start
-   ```
-
-2. Open a web browser and navigate to `http://localhost:3000`.
-
-### Usage
-
-#### Desktop View:
-1. Enter the event code provided by the organizer.
-2. If valid, a QR code will be displayed.
-3. Use a mobile device to scan the QR code to access the mobile view.
-
-#### Mobile View:
-1. Grant camera permissions when prompted.
-2. Capture a photo using the camera interface.
-3. Wait for the analysis results to be displayed.
-4. Review the facial analysis results, including face shape, features, and overall analysis.
-5. Use the "Retake Photo" button to capture a new image if desired.
-
-### Testing
-
-Run the test suite with:
+1. **Clone and install dependencies:**
+```bash
+git clone <repository-url>
+cd frontend
+npm install
 ```
+
+2. **Configure environment:**
+```bash
+# Set your API endpoint in src/config/index.js
+export const config = {
+  apiEndpoint: 'your-api-gateway-endpoint',
+  cognitoIdentityPoolId: 'your-cognito-pool-id',
+  iotEndpoint: 'your-iot-endpoint'
+};
+```
+
+3. **Start development server:**
+```bash
+npm start
+```
+
+4. **Access the application:**
+   - Desktop: `http://localhost:3000`
+   - Mobile: Scan QR code from desktop view
+
+## 📱 Usage Guide
+
+### Desktop Flow
+1. Enter valid event code
+2. Choose service: Face Reading or Fortune Telling
+3. QR code appears for mobile access
+
+### Face Reading Master
+1. **Mobile Setup**: Scan QR code, grant camera permissions
+2. **Photo Capture**: Take clear face photo
+3. **AI Analysis**: Real-time progress tracking through 3 stages:
+   - Face shape analysis
+   - Facial features analysis  
+   - Overall fortune prediction
+4. **Results**: View detailed analysis with downloadable report
+
+### Fortune Telling Master
+1. **Personal Info**: Enter name and select category (love, career, wealth, etc.)
+2. **Fortune Selection**: Choose fortune number (1-24) or get random
+3. **AI Interpretation**: Personalized fortune reading with suggestions
+4. **Results**: Download fortune poem and interpretation
+
+## 🌐 Multi-language Support
+
+The application supports three languages with automatic routing:
+
+- **English**: `/en/`
+- **Traditional Chinese**: `/zh/`
+- **Simplified Chinese**: `/zhcn/`
+
+Language files are located in `src/i18n/translations/`.
+
+## 🔧 Configuration
+
+### Environment Variables
+```javascript
+// src/config/index.js
+export const config = {
+  apiEndpoint: process.env.REACT_APP_API_ENDPOINT || 'default-endpoint',
+  cognitoIdentityPoolId: 'your-cognito-pool-id',
+  iotEndpoint: 'your-iot-endpoint'
+};
+```
+
+### AWS Services Setup
+- **API Gateway**: RESTful endpoints for analysis requests
+- **Lambda Functions**: Backend processing logic
+- **Bedrock**: AI model integration
+- **IoT Core**: Real-time progress updates
+- **Cognito**: Identity management
+
+## 🧪 Testing
+
+```bash
+# Run test suite
 npm test
+
+# Run specific tests
+npm test -- --testNamePattern="Component"
 ```
 
-### Troubleshooting
+## 🚀 Deployment
 
-1. Camera Access Issues:
-   - Ensure that your browser has permission to access the camera.
-   - If using HTTPS, make sure your SSL certificate is valid.
-   - Problem: "無法存取相機，請確認已授予相機權限" (Unable to access camera, please confirm camera permissions are granted)
-   - Solution: Check browser settings and grant camera access permissions.
+```bash
+# Build for production
+npm run build
 
-2. API Connection Errors:
-   - Verify that the `REACT_APP_API_ENDPOINT` is correctly set.
-   - Check your network connection.
-   - Problem: "系統發生錯誤，請稍後再試" (System error occurred, please try again later)
-   - Solution: Verify API endpoint configuration and network connectivity.
-
-3. Event Code Issues:
-   - Ensure you're entering a valid event code.
-   - Problem: "無效的活動代碼" (Invalid event code)
-   - Solution: Double-check the event code provided by the organizer.
-
-4. Performance Optimization:
-   - If experiencing slow image uploads, consider compressing images before sending to the API.
-   - Monitor network requests in the browser's developer tools to identify bottlenecks.
-
-## Data Flow
-
-The application follows this data flow for facial analysis:
-
-1. User enters an event code (desktop) or scans a QR code (mobile).
-2. Mobile view is loaded, and camera access is requested.
-3. User captures a photo using the mobile device's camera.
-4. The captured image is converted to a base64 string.
-5. The base64 image is sent to the API Gateway (`/analyze` endpoint) via a POST request and trigger a Lambda Function.
-6. The backend processes the image using Amazon Bedrock's AI capabilities.
-7. Analysis results are returned to the frontend.
-8. Results are displayed to the user, showing face shape, features, and overall analysis.
-
-```
-[User] -> [Camera Capture] -> [Image Processing] -> [API Request] -> [Amazon Bedrock]
-                                                                         |
-[Display Results] <- [Parse Response] <- [Receive Analysis] <-------------
+# Deploy to AWS Amplify
+# Configure Amplify with your repository and build settings
 ```
 
-## Infrastructure
+## 🔍 Troubleshooting
 
-The frontend application is designed to work with a serverless backend infrastructure. While the specific backend implementation details are not provided in the given code, the application expects an API endpoint that can handle image analysis requests.
+### Common Issues
 
-Key infrastructure components inferred from the frontend code:
+**Camera Access Denied**
+- Ensure HTTPS connection
+- Check browser permissions
+- Verify camera hardware availability
 
-1. API Gateway: The `config.apiEndpoint` suggests the use of API Gateway to handle HTTP requests.
-2. Lambda Functions: The `/analyze` and `/checkEvent` endpoints likely trigger Lambda functions for processing.
-3. Amazon Bedrock: Used for AI-powered facial analysis, as indicated by the application's purpose.
+**API Connection Errors**
+- Verify API endpoint configuration
+- Check AWS service status
+- Validate event code
 
-The frontend is hosted on AWS Amplify.
+**Real-time Updates Not Working**
+- Confirm IoT endpoint configuration
+- Check WebSocket connection
+- Verify Cognito credentials
 
-![Architecture](./public/architecture.png)
+**Language Display Issues**
+- Clear browser cache
+- Check language file imports
+- Verify routing configuration
+
+## 📊 Performance Optimization
+
+- **Image Compression**: Automatic compression before upload
+- **Lazy Loading**: Components loaded on demand
+- **Caching**: Static assets cached for performance
+- **WebSocket Management**: Efficient connection handling
+- **IoT Core**
+
+---
+
+**Powered by Amazon Bedrock** 🚀
