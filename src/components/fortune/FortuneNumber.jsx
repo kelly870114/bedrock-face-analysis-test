@@ -97,7 +97,7 @@ const LoadingOverlay = styled.div`
   backdrop-filter: blur(3px);
 `;
 
-const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => {
+const FortuneNumber = ({ user_name, category, existingNumber = null, eventId, lang }) => {
   const { t } = useTranslation(lang); // 使用翻譯 Hook
   const [isInterpreting, setIsInterpreting] = useState(false);
   const [interpretation, setInterpretation] = useState(null);
@@ -117,6 +117,11 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
         throw new Error(t("fortuneTelling.missingParams"));
       }
 
+      // 檢查是否有 eventId
+      if (!eventId) {
+        throw new Error(t("desktop.invalidEventCode"));
+      }
+
       const response = await fetch(`${config.apiEndpoint}/interpretFortune`, {
         method: "POST",
         headers: {
@@ -126,6 +131,7 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
           user_name: user_name,
           fortune_category: category,
           fortune_number: localFortuneNumber,
+          event_id: eventId, // 加入 event_id 參數
           lang: lang
         }),
       });
@@ -154,7 +160,8 @@ const FortuneNumber = ({ user_name, category, existingNumber = null, lang }) => 
         category={category}
         fortuneNumber={localFortuneNumber}
         interpretation={interpretation}
-        lang={lang}  // 🔸 加入語言參數傳遞給子組件
+        eventId={eventId} // 傳遞 eventId 給 FortuneInterpret
+        lang={lang}  // 加入語言參數傳遞給子組件
       />
     );
   }

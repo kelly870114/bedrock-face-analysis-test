@@ -195,6 +195,13 @@ export const Input = styled.input`
     color: #999;
     text-align: center;
   }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+    border-color: #ddd;
+  }
 `;
 
 export const ButtonGroup = styled.div`
@@ -222,8 +229,15 @@ export const CategoryButton = styled.button`
   white-space: nowrap;
   margin-bottom: 8px;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${props => props.selected ? '#B85C38' : '#fff0e6'};
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    border-color: #ddd;
+    cursor: not-allowed;
   }
 `;
 
@@ -245,12 +259,12 @@ export const StartButton = styled.button`
   box-shadow: 0 4px 12px rgba(184, 92, 56, 0.3);
   width: 200px;
   
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-2px);
     background-color: #B85C38;
   }
   
-  &:active {
+  &:active:not(:disabled) {
     transform: translateY(0);
   }
   
@@ -258,6 +272,8 @@ export const StartButton = styled.button`
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
+    background-color: #999;
+    box-shadow: none;
   }
 `;
 
@@ -353,8 +369,15 @@ export const NumberButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
   
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: ${props => props.selected ? '#B85C38' : '#fff0e6'};
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    border-color: #ddd;
+    cursor: not-allowed;
   }
 `;
 

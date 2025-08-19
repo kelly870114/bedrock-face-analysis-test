@@ -65,6 +65,7 @@ const FortuneInterpret = ({
   category, 
   fortuneNumber,
   interpretation,
+  eventId, // 新增 eventId 參數
   lang // 語言參數
 }) => {
   const { t } = useTranslation(lang); // 使用翻譯 Hook
@@ -92,7 +93,10 @@ const FortuneInterpret = ({
   const categoryText = {
     love: t("fortuneTelling.category.love"),
     career: t("fortuneTelling.category.career"),
-    wealth: t("fortuneTelling.category.wealth")
+    wealth: t("fortuneTelling.category.wealth"),
+    family: t("fortuneTelling.category.family"),
+    study: t("fortuneTelling.category.study"),
+    travel: t("fortuneTelling.category.travel")
   };
 
   // WebSocket connection setup
@@ -158,6 +162,7 @@ const FortuneInterpret = ({
         body: JSON.stringify({
           image: base64data,
           fortune_analysis_id: interpretation.fortune_analysis_id,
+          event_id: eventId, // 加入 event_id 參數
           lang: lang // 添加語言參數
         })
       });
@@ -287,6 +292,13 @@ const FortuneInterpret = ({
     setShowCamera(true);
   };
 
+  const handleRetryFortune = () => {
+    // 使用 eventId 構建正確的重新嘗試 URL
+    const currentLang = lang || 'zh';
+    const retryUrl = `/${currentLang}/fortune/mobile?event=${eventId}`;
+    window.location.href = retryUrl;
+  };
+
   if (analysisResult) {
     return (
       <AnalysisResult
@@ -402,7 +414,7 @@ const FortuneInterpret = ({
         </ActionButton> */}
 
         <ActionButton 
-          onClick={() => window.location.reload()}
+          onClick={handleRetryFortune}
           style={{ 
             backgroundColor: 'transparent', 
             color: '#C84B31', 

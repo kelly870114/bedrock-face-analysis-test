@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { X } from "lucide-react";
+import { config } from "../../config";
 import {
   PageWrapper,
   ChineseContainer,
@@ -36,10 +37,69 @@ const FortuneMobileView = ({ lang }) => {
   const [showResult, setShowResult] = useState(false);
   const [showNumberModal, setShowNumberModal] = useState(false);
   const [fortuneNumber, setFortuneNumber] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // 改為 true，因為需要先檢查 event
   const [existingNumber, setExistingNumber] = useState(null);
-  const [instanceKey, setInstanceKey] = useState(Date.now()); // 用於強制重新渲染FortuneResult
+  const [instanceKey, setInstanceKey] = useState(Date.now());
   const [error, setError] = useState("");
+  
+  // 新增 event 相關狀態
+  const [eventInfo, setEventInfo] = useState(null);
+  const [eventId, setEventId] = useState(null);
+  const [eventAccessible, setEventAccessible] = useState(false);
+
+  // 檢查活動存在性和訪問權限
+  useEffect(() => {
+    const checkEventAccess = async () => {
+      try {
+        const eventIdFromParams = searchParams.get("event");
+
+        if (!eventIdFromParams) {
+          setError(t("desktop.invalidEventCode"));
+          setIsLoading(false);
+          return;
+        }
+
+        setEventId(eventIdFromParams);
+
+        const response = await fetch(
+          `${config.apiEndpoint}/checkEvent?event=${eventIdFromParams}`,
+          {
+            method: "GET",
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!data.isAccessible) {
+          setError(data.message || t("desktop.eventNotAvailable"));
+          setEventInfo({
+            name: data.eventName,
+            message: data.message,
+          });
+          setEventAccessible(false);
+          setIsLoading(false);
+          return;
+        }
+
+        setEventInfo({
+          name: data.eventName,
+          message: data.message,
+        });
+        setEventAccessible(true);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error:", error);
+        setError(t("desktop.systemError"));
+        setIsLoading(false);
+      }
+    };
+
+    checkEventAccess();
+  }, [searchParams, t]);
 
   // 從 URL 參數讀取重置信息
   useEffect(() => {
@@ -62,6 +122,12 @@ const FortuneMobileView = ({ lang }) => {
   }, [searchParams]);
 
   const handleStartFortune = () => {
+    // 檢查 event 是否可存取
+    if (!eventAccessible) {
+      setError(t("desktop.eventNotAvailable"));
+      return;
+    }
+
     // 檢查是否選擇了類別
     if (!selectedCategory) {
       setError(t("fortuneTelling.noCategoryError"));
@@ -90,6 +156,12 @@ const FortuneMobileView = ({ lang }) => {
   };
 
   const handleExistingNumber = () => {
+    // 檢查 event 是否可存取
+    if (!eventAccessible) {
+      setError(t("desktop.eventNotAvailable"));
+      return;
+    }
+
     const number = parseInt(fortuneNumber);
     if (number >= 1 && number <= 24) {
       if (!name.trim()) {
@@ -134,6 +206,75 @@ const FortuneMobileView = ({ lang }) => {
     setError("");
   };
 
+  // Loading 狀態
+  if (isLoading && !showResult) {
+    return (
+      <PageWrapper>
+        <ChineseContainer>
+          <BorderContainer />
+          <Corner className="top-left" />
+          <Corner className="top-right" />
+          <Corner className="bottom-left" />
+          <Corner className="bottom-right" />
+          <ContentWrapper>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              color: '#C84B31',
+              fontSize: '20px',
+              fontFamily: 'Noto Serif TC, serif'
+            }}>
+              {t("common.loading")}
+            </div>
+          </ContentWrapper>
+        </ChineseContainer>
+      </PageWrapper>
+    );
+  }
+
+  // 錯誤狀態（包括活動未開放）
+  if (error && !eventAccessible && !showResult) {
+    return (
+      <PageWrapper>
+        <ChineseContainer>
+          <BorderContainer />
+          <Corner className="top-left" />
+          <Corner className="top-right" />
+          <Corner className="bottom-left" />
+          <Corner className="bottom-right" />
+          <ContentWrapper>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <h2 style={{
+                color: '#C84B31',
+                fontFamily: 'Noto Serif TC, serif',
+                marginBottom: '20px'
+              }}>
+                {eventInfo?.name || t("fortuneTelling.title")}
+              </h2>
+              <p style={{
+                color: '#666',
+                fontFamily: 'Noto Serif TC, serif',
+                lineHeight: 1.5
+              }}>
+                {error}
+              </p>
+            </div>
+          </ContentWrapper>
+        </ChineseContainer>
+      </PageWrapper>
+    );
+  }
+
   return (
     <PageWrapper>
       <ChineseContainer>
@@ -174,6 +315,7 @@ const FortuneMobileView = ({ lang }) => {
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t("fortuneTelling.enterName")}
                     maxLength={20}
+                    disabled={!eventAccessible}
                   />
                 </InputContainer>
 
@@ -181,36 +323,42 @@ const FortuneMobileView = ({ lang }) => {
                   <CategoryButton
                     selected={selectedCategory === "love"}
                     onClick={() => setSelectedCategory("love")}
+                    disabled={!eventAccessible}
                   >
                     {t("fortuneTelling.category.love")}
                   </CategoryButton>
                   <CategoryButton
                     selected={selectedCategory === "career"}
                     onClick={() => setSelectedCategory("career")}
+                    disabled={!eventAccessible}
                   >
                     {t("fortuneTelling.category.career")}
                   </CategoryButton>
                   <CategoryButton
                     selected={selectedCategory === "wealth"}
                     onClick={() => setSelectedCategory("wealth")}
+                    disabled={!eventAccessible}
                   >
                     {t("fortuneTelling.category.wealth")}
                   </CategoryButton>
                   <CategoryButton
                     selected={selectedCategory === "family"}
                     onClick={() => setSelectedCategory("family")}
+                    disabled={!eventAccessible}
                   >
                     {t("fortuneTelling.category.family")}
                   </CategoryButton>
                   <CategoryButton
                     selected={selectedCategory === "study"}
                     onClick={() => setSelectedCategory("study")}
+                    disabled={!eventAccessible}
                   >
                     {t("fortuneTelling.category.study")}
                   </CategoryButton>
                   <CategoryButton
                     selected={selectedCategory === "travel"}
                     onClick={() => setSelectedCategory("travel")}
+                    disabled={!eventAccessible}
                   >
                     {t("fortuneTelling.category.travel")}
                   </CategoryButton>
@@ -235,7 +383,7 @@ const FortuneMobileView = ({ lang }) => {
 
                 {/* hide for event */}
                 {/* <StartButton
-                  disabled={!selectedCategory || isLoading || !name.trim()}
+                  disabled={!selectedCategory || isLoading || !name.trim() || !eventAccessible}
                   onClick={handleStartFortune}
                 >
                   {isLoading
@@ -244,7 +392,7 @@ const FortuneMobileView = ({ lang }) => {
                 </StartButton> */}
 
                 <StartButton
-                  disabled={!selectedCategory || isLoading || !name.trim()}
+                  disabled={!selectedCategory || isLoading || !name.trim() || !eventAccessible}
                   onClick={() => setShowNumberModal(true)}
                   style={{
                     backgroundColor: "transparent",
@@ -263,6 +411,7 @@ const FortuneMobileView = ({ lang }) => {
               user_name={name}
               category={selectedCategory}
               existingNumber={existingNumber}
+              eventId={eventId} // 傳遞 eventId 給 FortuneResult
               lang={lang} // 傳遞語言設定
             />
           )}
@@ -283,6 +432,7 @@ const FortuneMobileView = ({ lang }) => {
               value={fortuneNumber}
               onChange={(e) => setFortuneNumber(e.target.value)}
               placeholder={t("fortuneTelling.fortuneNumberPlaceholder")}
+              disabled={!eventAccessible}
             />
 
             {/* 數字按鈕 */}
@@ -292,6 +442,7 @@ const FortuneMobileView = ({ lang }) => {
                   key={num}
                   selected={parseInt(fortuneNumber) === num}
                   onClick={() => setFortuneNumber(num.toString())}
+                  disabled={!eventAccessible}
                 >
                   {num}
                 </NumberButton>
@@ -319,7 +470,8 @@ const FortuneMobileView = ({ lang }) => {
                 isLoading ||
                 !fortuneNumber ||
                 parseInt(fortuneNumber) < 1 ||
-                parseInt(fortuneNumber) > 24
+                parseInt(fortuneNumber) > 24 ||
+                !eventAccessible
               }
             >
               {isLoading ? t("common.loading") : t("fortuneTelling.confirm")}
@@ -328,7 +480,7 @@ const FortuneMobileView = ({ lang }) => {
         </ModalOverlay>
       )}
 
-      {isLoading && (
+      {isLoading && showResult && (
         <ModalOverlay>
           <div
             style={{
