@@ -99,6 +99,8 @@ const MobileView = ({ lang }) => {
   const [sessionId, setSessionId] = useState(null);
   const [eventId, setEventId] = useState(null);
   const [analysisStatus, setAnalysisStatus] = useState("等待開始");
+  const [supportedLanguages, setSupportedLanguages] = useState(null); // 活動支援的語言
+  const [featureAllowed, setFeatureAllowed] = useState(true); // 功能是否被允許
 
   // 下載相關狀態
   const [showQRCode, setShowQRCode] = useState(false);
@@ -149,6 +151,10 @@ const MobileView = ({ lang }) => {
             name: data.eventName,
             message: data.message,
           });
+          // 即使活動未開放，也要設定支援的語言
+          if (data.supported_languages) {
+            setSupportedLanguages(data.supported_languages);
+          }
           setIsLoading(false);
           return;
         }
@@ -157,6 +163,22 @@ const MobileView = ({ lang }) => {
           name: data.eventName,
           message: data.message,
         });
+        
+        // 儲存活動支援的語言
+        if (data.supported_languages) {
+          setSupportedLanguages(data.supported_languages);
+        }
+        
+        // 檢查此功能是否被允許（面相功能需要 tw_face）
+        const faceTypes = ['tw_face'];
+        const cultureTypes = data.culture_types || [];
+        const hasFaceFeature = cultureTypes.some(type => faceTypes.includes(type));
+        
+        if (!hasFaceFeature) {
+          setFeatureAllowed(false);
+          setError(t("faceAnalysis.featureNotAllowed", { defaultValue: "此活動未開放面相功能" }));
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Error:", error);
@@ -766,9 +788,9 @@ const MobileView = ({ lang }) => {
         <Corner className="bottom-right" />
 
         <ContentWrapper>
-          {/* 語言切換器 */}
+          {/* 語言切換器 - 根據活動配置動態顯示語言 */}
           <LanguageSwitcher
-            currentPath="/face/mobile"
+            supportedLanguages={supportedLanguages}
             queryParams={{ event: eventId }}
           />
 

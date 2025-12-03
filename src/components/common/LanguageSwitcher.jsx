@@ -28,12 +28,22 @@ const LanguageButton = styled.button`
   }
 `;
 
-const LanguageSwitcher = ({ queryParams }) => {
+const LanguageSwitcher = ({ queryParams, supportedLanguages }) => {
   const navigate = useNavigate();
   const location = useLocation();
   
   // 獲取當前語言
   const currentLang = getCurrentLanguage(location.pathname);
+  
+  // 決定要顯示哪些語言：如果有傳入 supportedLanguages 就用它，否則顯示全部
+  const languagesToShow = supportedLanguages && supportedLanguages.length > 0
+    ? supportedLanguages.filter(lang => lang in SUPPORTED_LANGUAGES)
+    : Object.keys(SUPPORTED_LANGUAGES);
+  
+  // 如果只有一種語言，不顯示切換器
+  if (languagesToShow.length <= 1) {
+    return null;
+  }
   
   // 切換語言
   const handleLanguageChange = (newLang) => {
@@ -70,13 +80,13 @@ const LanguageSwitcher = ({ queryParams }) => {
   
   return (
     <SwitcherContainer>
-      {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
+      {languagesToShow.map(code => (
         <LanguageButton
           key={code}
           active={currentLang === code}
           onClick={() => handleLanguageChange(code)}
         >
-          {name}
+          {SUPPORTED_LANGUAGES[code]}
         </LanguageButton>
       ))}
     </SwitcherContainer>

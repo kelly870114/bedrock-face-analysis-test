@@ -46,6 +46,8 @@ const FortuneMobileView = ({ lang }) => {
   const [eventInfo, setEventInfo] = useState(null);
   const [eventId, setEventId] = useState(null);
   const [eventAccessible, setEventAccessible] = useState(false);
+  const [supportedLanguages, setSupportedLanguages] = useState(null); // 活動支援的語言
+  const [featureAllowed, setFeatureAllowed] = useState(true); // 功能是否被允許
 
   // 檢查活動存在性和訪問權限
   useEffect(() => {
@@ -81,6 +83,10 @@ const FortuneMobileView = ({ lang }) => {
             message: data.message,
           });
           setEventAccessible(false);
+          // 即使活動未開放，也要設定支援的語言
+          if (data.supported_languages) {
+            setSupportedLanguages(data.supported_languages);
+          }
           setIsLoading(false);
           return;
         }
@@ -89,7 +95,25 @@ const FortuneMobileView = ({ lang }) => {
           name: data.eventName,
           message: data.message,
         });
-        setEventAccessible(true);
+        
+        // 儲存活動支援的語言
+        if (data.supported_languages) {
+          setSupportedLanguages(data.supported_languages);
+        }
+        
+        // 檢查此功能是否被允許（籤詩功能需要 tw_fortune 或 jp_omikuji 或 western_tarot）
+        const fortuneTypes = ['tw_fortune', 'jp_omikuji', 'western_tarot'];
+        const cultureTypes = data.culture_types || [];
+        const hasFortuneFeature = cultureTypes.some(type => fortuneTypes.includes(type));
+        
+        if (!hasFortuneFeature) {
+          setFeatureAllowed(false);
+          setError(t("fortuneTelling.featureNotAllowed", { defaultValue: "此活動未開放籤詩功能" }));
+          setEventAccessible(false);
+        } else {
+          setEventAccessible(true);
+        }
+        
         setIsLoading(false);
       } catch (error) {
         console.error("Error:", error);
@@ -285,8 +309,8 @@ const FortuneMobileView = ({ lang }) => {
         <Corner className="bottom-right" />
 
         <ContentWrapper>
-          {/* 語言切換器 - 只在初始選擇頁面顯示 */}
-          {!showResult && <LanguageSwitcher />}
+          {/* 語言切換器 - 只在初始選擇頁面顯示，根據活動配置動態顯示語言 */}
+          {!showResult && <LanguageSwitcher supportedLanguages={supportedLanguages} />}
 
           {!showResult ? (
             <>
