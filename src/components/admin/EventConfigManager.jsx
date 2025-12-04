@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useAuth } from 'react-oidc-context';
 import { config } from '../../config';
 
 const Container = styled.div`
@@ -241,6 +242,82 @@ const LoadingSpinner = styled.div`
   color: #666;
 `;
 
+// 登入頁面樣式
+const LoginContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #232F3E 0%, #37475A 100%);
+  font-family: 'Noto Sans TC', sans-serif;
+`;
+
+const LoginCard = styled.div`
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  max-width: 400px;
+  width: 90%;
+`;
+
+const LoginTitle = styled.h1`
+  color: #232F3E;
+  margin: 0 0 10px 0;
+  font-size: 24px;
+`;
+
+const LoginSubtitle = styled.p`
+  color: #666;
+  margin: 0 0 30px 0;
+`;
+
+const LoginButton = styled.button`
+  background: #FF9900;
+  color: #232F3E;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+
+  &:hover {
+    background: #EC7211;
+    transform: translateY(-1px);
+  }
+`;
+
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+`;
+
+const UserName = styled.span`
+  color: #666;
+  font-size: 14px;
+`;
+
+const LogoutButton = styled.button`
+  background: transparent;
+  color: #666;
+  border: 1px solid #DDD;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #F5F5F5;
+  }
+`;
+
 // 文化類型選項（單一選擇）
 const CULTURE_TYPES = [
   { value: 'tw_fortune', label: '台灣籤詩算命', icon: '🏮', description: '傳統籤詩解讀' },
@@ -257,11 +334,21 @@ const LANGUAGE_OPTIONS = [
 ];
 
 const EventConfigManager = () => {
+  const auth = useAuth();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [saving, setSaving] = useState(false);
+
+  // Cognito 登出
+  const handleLogout = () => {
+    const clientId = '3qenkgtfedaoqq7e1cvdvnniu9';
+    const logoutUri = window.location.origin + '/admin/events';
+    const cognitoDomain = 'https://oidcuserpool.auth.us-east-1.amazoncognito.com';
+    auth.removeUser();
+    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+  };
 
   // 表單狀態
   const [formData, setFormData] = useState({
@@ -429,6 +516,50 @@ const EventConfigManager = () => {
     return culture ? `${culture.icon} ${culture.label}` : type;
   };
 
+  // 認證載入中
+  if (auth.isLoading) {
+    return (
+      <LoginContainer>
+        <LoginCard>
+          <LoginTitle>🎪 活動配置管理</LoginTitle>
+          <LoginSubtitle>載入中...</LoginSubtitle>
+        </LoginCard>
+      </LoginContainer>
+    );
+  }
+
+  // 認證錯誤
+  if (auth.error) {
+    return (
+      <LoginContainer>
+        <LoginCard>
+          <LoginTitle>🎪 活動配置管理</LoginTitle>
+          <LoginSubtitle style={{ color: '#D32F2F' }}>
+            登入錯誤: {auth.error.message}
+          </LoginSubtitle>
+          <LoginButton onClick={() => auth.signinRedirect()}>
+            重新登入
+          </LoginButton>
+        </LoginCard>
+      </LoginContainer>
+    );
+  }
+
+  // 未登入顯示登入頁面
+  if (!auth.isAuthenticated) {
+    return (
+      <LoginContainer>
+        <LoginCard>
+          <LoginTitle>🎪 活動配置管理</LoginTitle>
+          <LoginSubtitle>請使用 AWS Identity Center 登入</LoginSubtitle>
+          <LoginButton onClick={() => auth.signinRedirect()}>
+            使用 SSO 登入
+          </LoginButton>
+        </LoginCard>
+      </LoginContainer>
+    );
+  }
+
   if (loading) {
     return (
       <Container>
@@ -441,9 +572,13 @@ const EventConfigManager = () => {
     <Container>
       <Header>
         <Title>🎪 活動配置管理</Title>
-        <AddButton onClick={() => handleOpenModal()}>
-          + 新增活動
-        </AddButton>
+        <UserInfo>
+          <UserName>👤 {auth.user?.profile?.email || auth.user?.profile?.name || 'User'}</UserName>
+          <LogoutButton onClick={handleLogout}>登出</LogoutButton>
+          <AddButton onClick={() => handleOpenModal()}>
+            + 新增活動
+          </AddButton>
+        </UserInfo>
       </Header>
 
       <EventGrid>

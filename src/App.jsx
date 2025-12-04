@@ -5,6 +5,7 @@ import EventLanding from './components/event/EventLanding';
 import FortuneMobileView from './components/fortune/FortuneMobileView';
 import MobileView from './components/face/MobileView';
 import EventConfigManager from './components/admin/EventConfigManager';
+import AuthCallback from './components/admin/AuthCallback';
 import { SUPPORTED_LANGUAGES } from './i18n/config';
 
 const App = () => {
@@ -36,6 +37,9 @@ const App = () => {
         
         {/* 活動配置管理頁面 */}
         <Route path="/admin/events" element={<EventConfigManager />} />
+        
+        {/* SSO 回調頁面 */}
+        <Route path="/admin/callback" element={<AuthCallback />} />
         
         {/* 捕捉無效路徑 */}
         <Route path="*" element={<Navigate to="/" />} />
