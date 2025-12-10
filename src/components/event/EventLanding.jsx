@@ -136,6 +136,8 @@ const EventLanding = () => {
   const [eventId, setEventId] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const checkEventAccess = async () => {
       try {
         const eventIdFromParams = searchParams.get("event");
@@ -146,7 +148,7 @@ const EventLanding = () => {
           return;
         }
 
-        setEventId(eventIdFromParams);
+        if (isMounted) setEventId(eventIdFromParams);
 
         const response = await fetch(
           `${config.apiEndpoint}/checkEvent?event=${eventIdFromParams}`,
@@ -160,6 +162,8 @@ const EventLanding = () => {
         );
 
         const data = await response.json();
+        
+        if (!isMounted) return;
 
         if (!data.isAccessible) {
           const lang = data.default_language || "zh";
@@ -186,12 +190,17 @@ const EventLanding = () => {
         setIsLoading(false);
       } catch (err) {
         console.error("Error:", err);
+        if (!isMounted) return;
         setError(PAGE_TEXT.systemError[defaultLanguage] || "System error");
         setIsLoading(false);
       }
     };
 
     checkEventAccess();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [searchParams, navigate]);
 
   const handleFeatureClick = (cultureType) => {

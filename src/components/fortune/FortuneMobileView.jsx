@@ -51,17 +51,21 @@ const FortuneMobileView = ({ lang }) => {
 
   // 檢查活動存在性和訪問權限
   useEffect(() => {
+    let isMounted = true; // 防止組件卸載後更新狀態
+    
     const checkEventAccess = async () => {
       try {
         const eventIdFromParams = searchParams.get("event");
 
         if (!eventIdFromParams) {
-          setError(t("desktop.invalidEventCode"));
-          setIsLoading(false);
+          if (isMounted) {
+            setError(t("desktop.invalidEventCode"));
+            setIsLoading(false);
+          }
           return;
         }
 
-        setEventId(eventIdFromParams);
+        if (isMounted) setEventId(eventIdFromParams);
 
         const response = await fetch(
           `${config.apiEndpoint}/checkEvent?event=${eventIdFromParams}`,
@@ -75,6 +79,8 @@ const FortuneMobileView = ({ lang }) => {
         );
 
         const data = await response.json();
+        
+        if (!isMounted) return;
 
         if (!data.isAccessible) {
           setError(data.message || t("desktop.eventNotAvailable"));
@@ -117,13 +123,23 @@ const FortuneMobileView = ({ lang }) => {
         setIsLoading(false);
       } catch (error) {
         console.error("Error:", error);
-        setError(t("desktop.systemError"));
+        if (!isMounted) return;
+        // 更友善的錯誤訊息，區分網路錯誤和其他錯誤
+        if (error.message === 'Failed to fetch') {
+          setError(t("desktop.networkError", { defaultValue: "無法連接伺服器，請檢查網路連線或稍後再試" }));
+        } else {
+          setError(t("desktop.systemError"));
+        }
         setIsLoading(false);
       }
     };
 
     checkEventAccess();
-  }, [searchParams, t]);
+    
+    return () => {
+      isMounted = false; // 清理函數，防止記憶體洩漏
+    };
+  }, [searchParams]); // 移除 t 依賴，避免不必要的重新呼叫
 
   // 從 URL 參數讀取重置信息
   useEffect(() => {

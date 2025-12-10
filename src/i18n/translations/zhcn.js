@@ -127,6 +127,8 @@ export default {
     startInterpreting: "开始解签",
     retryFortune: "重新抽签",
     downloadResult: "下载解签结果",
+    preparingDownload: "正在准备下载...",
+    fortuneImage: "签诗图片",
     fortuneInterpretation: "的解签",
     suggestion: "建议",
     awsReminder: "AWS 小提醒",

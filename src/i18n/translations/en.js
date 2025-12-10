@@ -127,6 +127,8 @@ export default {
     startInterpreting: "Start Interpretation",
     retryFortune: "Try Fortune Telling Again",
     downloadResult: "Download Your Results",
+    preparingDownload: "Preparing download...",
+    fortuneImage: "Fortune Image",
     fortuneInterpretation: "'s Fortune Reading",
     suggestion: "Suggestions",
     awsReminder: "AWS Reminder",

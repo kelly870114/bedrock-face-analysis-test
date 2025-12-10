@@ -127,6 +127,8 @@ export default {
     startInterpreting: "開始解籤",
     retryFortune: "重新抽籤",
     downloadResult: "下載解籤結果",
+    preparingDownload: "正在準備下載...",
+    fortuneImage: "籤詩圖片",
     fortuneInterpretation: "的解籤",
     suggestion: "建議",
     awsReminder: "AWS 小提醒",

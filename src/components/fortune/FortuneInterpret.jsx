@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Camera as CameraIcon } from "lucide-react";
 import html2canvas from 'html2canvas';
 import { X } from "lucide-react";
+import { QRCodeSVG } from 'qrcode.react';
 import { config } from '../../config';
 import Camera from '../common/Camera/Camera';
 import AnalysisResult from '../face/AnalysisResult';
@@ -25,8 +26,9 @@ import {
   ModalText,
   LoadingOverlay
 } from './styles-fortune-interpret';
+import { LoadingContainer, FortuneIcon } from './styles-fortune-mobile';
 
-// QR Code Modal Component
+// QR Code Modal Component - 使用本地 qrcode.react 套件，不需要外部 API
 const QRCodeModal = ({ url, isOpen, onClose, lang }) => {
   const { t } = useTranslation(lang);
   
@@ -40,18 +42,13 @@ const QRCodeModal = ({ url, isOpen, onClose, lang }) => {
         </ModalCloseButton>
         <ModalTitle>{t("fortuneTelling.scanToDownload")}</ModalTitle>
         <QRCodeContainer>
-          <svg
-            width="100%"
-            height="100%"
-            viewBox="0 0 100 100"
-            dangerouslySetInnerHTML={{
-              __html: `
-                <rect width="100" height="100" fill="white"/>
-                <image href="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                  url
-                )}" width="100" height="100" />
-              `,
-            }}
+          <QRCodeSVG 
+            value={url} 
+            size={180}
+            level="M"
+            includeMargin={true}
+            bgColor="#ffffff"
+            fgColor="#000000"
           />
         </QRCodeContainer>
         <ModalText>{t("fortuneTelling.downloadExpiration")}</ModalText>
@@ -211,7 +208,7 @@ const FortuneInterpret = ({
 
       const canvas = await html2canvas(clone, {
         backgroundColor: "#FDF6E9",
-        scale: 2,
+        scale: 1.5, // 從 2 降到 1.5，減少圖片大小加快上傳
         useCORS: true,
         logging: false,
         width: originalWidth,
@@ -433,6 +430,16 @@ const FortuneInterpret = ({
       )}
 
       {isAnalyzing && <LoadingOverlay>{t("fortuneTelling.analyzing")}</LoadingOverlay>}
+
+      {/* 下載/上傳時的 loading 動畫 */}
+      {isUploading && (
+        <LoadingOverlay>
+          <LoadingContainer>
+            <FortuneIcon src="/fortune-lot.png" alt="Loading" />
+            {t("fortuneTelling.preparingDownload", { defaultValue: "正在準備下載..." })}
+          </LoadingContainer>
+        </LoadingOverlay>
+      )}
 
       <QRCodeModal
         url={downloadUrl}
